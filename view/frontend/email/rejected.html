@@ -1,0 +1,28 @@
+<!--@subject {{trans "Your company application at %store_name" store_name=$store.frontend_name}} @-->
+<!--@vars {
+"var store.frontend_name":"Store Name",
+"var customer_name":"Contact Name",
+"var company_name":"Company Name",
+"var status_url":"Application Status URL",
+"var comment":"Reason"
+} @-->
+
+{{template config_path="design/email/header_template"}}
+
+<p class="greeting">{{trans "%name," name=$customer_name}}</p>
+<p>{{trans "We are sorry, but the company application for %company_name has not been approved." company_name=$company_name}}</p>
+{{depend comment}}
+<p><strong>{{trans "Reason:"}}</strong> {{var comment}}</p>
+{{/depend}}
+{{depend status_url}}
+<p>
+    {{trans
+        'You can <a href="%status_url">reply to us and resubmit your application</a>. This link is personal: do not share it.'
+
+        status_url=$status_url
+    |raw}}
+</p>
+{{/depend}}
+<p>{{trans "Please contact us if you have any questions."}}</p>
+
+{{template config_path="design/email/footer_template"}}

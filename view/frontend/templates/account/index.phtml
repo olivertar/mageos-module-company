@@ -1,0 +1,56 @@
+<?php
+/**
+ * Company profile.
+ *
+ * @var \Magento\Framework\View\Element\Template $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+
+use MageOS\Company\Api\CompanyAuthorizationInterface as Auth;
+
+/** @var \MageOS\Company\ViewModel\CompanyAccount $viewModel */
+$viewModel = $block->getData('view_model');
+$company = $viewModel->getCompany();
+?>
+<?php if ($company): ?>
+    <div class="block block-company-info">
+        <div class="block-title">
+            <strong><?= $escaper->escapeHtml($company->getName()) ?></strong>
+        </div>
+        <div class="block-content">
+            <p>
+                <?= $escaper->escapeHtml(__('Status: %1', $viewModel->getStatusLabel())) ?> ·
+                <?= $escaper->escapeHtml(__('Your role: %1', $viewModel->getMyRoleLabel())) ?>
+            </p>
+            <table class="data table company-profile">
+                <caption class="table-caption"><?= $escaper->escapeHtml(__('Company Information')) ?></caption>
+                <tbody>
+                <?php foreach ($viewModel->getProfile() as $row): ?>
+                    <tr>
+                        <th scope="row"><?= $escaper->escapeHtml($row['label']) ?></th>
+                        <td><?= /* @noEscape */ nl2br($escaper->escapeHtml($row['value'])) ?></td>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+            <div class="actions-toolbar">
+                <?php if ($viewModel->isAllowed(Auth::RESOURCE_EDIT)): ?>
+                    <?php $actionUrl = $viewModel->getUrl('company/account/edit'); ?>
+                    <a class="action edit primary" href="<?= $escaper->escapeUrl($actionUrl) ?>">
+                        <span><?= $escaper->escapeHtml(__('Edit Company Information')) ?></span>
+                    </a>
+                <?php endif; ?>
+                <?php if ($viewModel->isAllowed(Auth::RESOURCE_ADDRESS_VIEW)): ?>
+                    <a class="action" href="<?= $escaper->escapeUrl($viewModel->getUrl('company/address')) ?>">
+                        <span><?= $escaper->escapeHtml(__('Company Addresses')) ?></span>
+                    </a>
+                <?php endif; ?>
+                <?php if ($viewModel->isAllowed(Auth::RESOURCE_USERS_MANAGE)): ?>
+                    <a class="action" href="<?= $escaper->escapeUrl($viewModel->getUrl('company/users')) ?>">
+                        <span><?= $escaper->escapeHtml(__('Company Users')) ?></span>
+                    </a>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+<?php endif; ?>

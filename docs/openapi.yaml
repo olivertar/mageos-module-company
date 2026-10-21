@@ -1,0 +1,1342 @@
+openapi: 3.0.3
+info:
+  title: MageOS Company REST API
+  version: 1.0.0
+  description: |
+    REST API of the `MageOS_Company` module: company accounts for Mage-OS.
+
+    ## Base URL
+    `https://{store-host}/rest/{store-code}/V1` (or `/rest/V1`, `/rest/all/V1`). The store code
+    determines the website used by self-service and registration operations.
+
+    ## Authentication
+    | Audience | How | Routes |
+    |---|---|---|
+    | Admin users and integrations | Bearer token: admin token (`POST /V1/integration/admin/token`) or integration access token (OAuth). Each route requires an ACL resource (`x-acl-resource`). | `/V1/companies…` except `mine` and `register` |
+    | Company users | Bearer customer token (`POST /V1/integration/customer/token`, or GraphQL `generateCustomerToken`). Resource `self`: the customer ID is always taken from the token. | `/V1/companies/mine…` |
+    | Anyone | No token. reCAPTCHA (`X-ReCaptcha` header) when enabled for company registration. | `POST /V1/companies/register` |
+
+    Customers of companies that are not approved, and inactive company users, cannot obtain a customer token.
+
+    ## Self-service ("mine") rules
+    * The company is always the one of the customer in the token; IDs of addresses and users are checked against it.
+    * Each operation needs a company resource (`x-company-resource`): `admin` users may use all; `user` users only
+      `company.view`, `company.address.view`, `company.messages.view`, `company.messages.send`.
+      Missing permission, no company, a company that is not approved, or an inactive user → **401**.
+    * Payloads only accept the attributes of the storefront forms (`company_account_edit`, `company_address_edit`).
+      `status`, `company_id`, `super_user_id`, `website_id` and other fields are ignored.
+    * Addresses or users of another company answer **404**, the same as missing ones.
+
+    ## Data conventions
+    * Company status: `0` pending, `1` approved, `2` rejected, `3` blocked.
+    * Company user role: `admin` or `user`; user status: `1` active, `0` inactive.
+    * EAV attributes (legal name, VAT number, phone, custom attributes created in the admin…) travel in
+      `custom_attributes` as `{attribute_code, value}`. Select values are option IDs; multiselect values are
+      comma-separated option IDs.
+    * Null values are omitted from responses.
+    * Updates: omitted or `null` fields are not changed; an empty string clears a value.
+
+    ## Errors
+    Standard Magento web API error body (`Error` schema). In developer mode a `trace` is added.
+    | HTTP | Cause |
+    |---|---|
+    | 400 | Validation errors, invalid status transition, business rule violations |
+    | 401 | Missing/invalid token, missing ACL resource, or missing company permission |
+    | 404 | Entity not found (or not in the caller's company) |
+    | 500 | Unexpected error |
+  license:
+    name: OSL-3.0
+    url: https://opensource.org/licenses/OSL-3.0
+servers:
+  - url: https://{host}/rest/{storeCode}/V1
+    variables:
+      host:
+        default: example.com
+      storeCode:
+        default: default
+        description: Store view code (`default`, `all`, …)
+tags:
+  - name: Companies
+    description: Admin / integration management of companies.
+  - name: Status
+    description: Company lifecycle (approve, reject, block, unblock, resubmit) and history.
+  - name: Company users
+    description: Admin / integration management of the customers of a company.
+  - name: Company addresses
+    description: Admin / integration management of company addresses.
+  - name: Messages
+    description: Admin / integration access to the company message thread.
+  - name: ERP
+    description: External (ERP) company code.
+  - name: My company
+    description: Self-service operations of a company user on its own company (customer token).
+  - name: Registration
+    description: Public company application.
+
+security:
+  - bearerAuth: []
+
+paths:
+  # ------------------------------------------------------------------ admin: companies
+  /companies:
+    get:
+      tags: [Companies]
+      summary: Search companies
+      description: Standard Magento search criteria. Filter by static fields (`entity_id`, `name`, `email`, `company_id`, `status`, `website_id`, `super_user_id`, `created_at`, `updated_at`) or EAV attribute codes.
+      operationId: companyRepositoryGetList
+      x-acl-resource: MageOS_Company::company_view
+      x-service: MageOS\Company\Api\CompanyRepositoryInterface::getList
+      parameters:
+        - $ref: '#/components/parameters/SearchCriteriaField'
+        - $ref: '#/components/parameters/SearchCriteriaValue'
+        - $ref: '#/components/parameters/SearchCriteriaConditionType'
+        - $ref: '#/components/parameters/SearchCriteriaSortField'
+        - $ref: '#/components/parameters/SearchCriteriaSortDirection'
+        - $ref: '#/components/parameters/SearchCriteriaPageSize'
+        - $ref: '#/components/parameters/SearchCriteriaCurrentPage'
+      responses:
+        '200':
+          description: Matching companies.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/CompanySearchResults'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+    post:
+      tags: [Companies]
+      summary: Create a company
+      description: |
+        Creates a company in status `pending` with a status history entry. `status` and `company_id` are ignored
+        (use the status and ERP routes). `website_id` defaults to the website of the default store.
+        Required attributes follow the admin form (`adminhtml_company`).
+      operationId: companyManagementCreate
+      x-acl-resource: MageOS_Company::company_edit
+      x-service: MageOS\Company\Api\CompanyManagementInterface::create
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [company]
+              properties:
+                company: {$ref: '#/components/schemas/CompanyInput'}
+            example:
+              company:
+                name: ACME
+                email: info@acme.example
+                website_id: 1
+                custom_attributes:
+                  - {attribute_code: legal_name, value: ACME Industries SL}
+                  - {attribute_code: vat_id, value: B12345678}
+                  - {attribute_code: phone, value: '+34 600 000 000'}
+      responses:
+        '200':
+          description: Created company.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Company'}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+
+  /companies/{companyId}:
+    parameters:
+      - $ref: '#/components/parameters/CompanyId'
+    get:
+      tags: [Companies]
+      summary: Get a company
+      operationId: companyRepositoryGetById
+      x-acl-resource: MageOS_Company::company_view
+      x-service: MageOS\Company\Api\CompanyRepositoryInterface::getById
+      responses:
+        '200':
+          description: The company.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Company'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '404': {$ref: '#/components/responses/NotFound'}
+    put:
+      tags: [Companies]
+      summary: Update a company
+      description: |
+        Partial update: omitted or `null` fields are not changed; `""` clears a value.
+        `status`, `company_id` and `website_id` are ignored. The route ID is copied into the payload by the web API.
+      operationId: companyManagementUpdate
+      x-acl-resource: MageOS_Company::company_edit
+      x-service: MageOS\Company\Api\CompanyManagementInterface::update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [company]
+              properties:
+                company: {$ref: '#/components/schemas/CompanyInput'}
+            example:
+              company:
+                name: ACME Industries
+                custom_attributes:
+                  - {attribute_code: fax, value: ''}
+      responses:
+        '200':
+          description: Updated company.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Company'}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '404': {$ref: '#/components/responses/NotFound'}
+    delete:
+      tags: [Companies]
+      summary: Delete a company
+      description: Deletes the company with its addresses, user links, history, messages and invitations. Customer accounts are kept.
+      operationId: companyRepositoryDeleteById
+      x-acl-resource: MageOS_Company::company_delete
+      x-service: MageOS\Company\Api\CompanyRepositoryInterface::deleteById
+      responses:
+        '200': {$ref: '#/components/responses/Success'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '404': {$ref: '#/components/responses/NotFound'}
+
+  # ------------------------------------------------------------------ ERP
+  /companies/erp/{erpCode}:
+    get:
+      tags: [ERP]
+      summary: Get a company by ERP code
+      operationId: companyRepositoryGetByErpCode
+      x-acl-resource: MageOS_Company::company_erp
+      x-service: MageOS\Company\Api\CompanyRepositoryInterface::getByErpCode
+      parameters:
+        - name: erpCode
+          in: path
+          required: true
+          schema: {type: string, maxLength: 64}
+          example: C-10045
+      responses:
+        '200':
+          description: The company.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Company'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '404': {$ref: '#/components/responses/NotFound'}
+
+  /companies/{companyId}/erp:
+    parameters:
+      - $ref: '#/components/parameters/CompanyId'
+    put:
+      tags: [ERP]
+      summary: Set or clear the ERP code
+      description: The code is unique across all companies and websites. `null` or `""` clears it.
+      operationId: companyManagementSetErpCode
+      x-acl-resource: MageOS_Company::company_erp
+      x-service: MageOS\Company\Api\CompanyManagementInterface::setErpCode
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                erpCode: {type: string, nullable: true, maxLength: 64}
+            example: {erpCode: C-10045}
+      responses:
+        '200':
+          description: Updated company.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Company'}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '404': {$ref: '#/components/responses/NotFound'}
+
+  # ------------------------------------------------------------------ status
+  /companies/{companyId}/approve:
+    parameters:
+      - $ref: '#/components/parameters/CompanyId'
+    post:
+      tags: [Status]
+      summary: Approve a pending company
+      description: '`pending` → `approved`. Records history, adds a system message, emails "company approved" (and the held-back account confirmation email, if any). Dispatches `company_status_change_after`.'
+      operationId: companyApprovalApprove
+      x-acl-resource: MageOS_Company::company_approve
+      x-service: MageOS\Company\Api\CompanyApprovalInterface::approve
+      requestBody:
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/OptionalComment'}
+            example: {comment: Welcome aboard}
+      responses:
+        '200': {$ref: '#/components/responses/CompanyResponse'}
+        '400': {$ref: '#/components/responses/InvalidTransition'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '404': {$ref: '#/components/responses/NotFound'}
+  /companies/{companyId}/reject:
+    parameters:
+      - $ref: '#/components/parameters/CompanyId'
+    post:
+      tags: [Status]
+      summary: Reject a pending company
+      description: '`pending` → `rejected`. Reason required. Ends sessions and tokens of the company users and emails the reason with a status link.'
+      operationId: companyApprovalReject
+      x-acl-resource: MageOS_Company::company_approve
+      x-service: MageOS\Company\Api\CompanyApprovalInterface::reject
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/RequiredReason'}
+            example: {reason: Please provide a valid VAT number.}
+      responses:
+        '200': {$ref: '#/components/responses/CompanyResponse'}
+        '400': {$ref: '#/components/responses/InvalidTransition'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '404': {$ref: '#/components/responses/NotFound'}
+  /companies/{companyId}/block:
+    parameters:
+      - $ref: '#/components/parameters/CompanyId'
+    post:
+      tags: [Status]
+      summary: Block an approved company
+      description: '`approved` → `blocked`. Reason required. Ends sessions and tokens of the company users.'
+      operationId: companyApprovalBlock
+      x-acl-resource: MageOS_Company::company_approve
+      x-service: MageOS\Company\Api\CompanyApprovalInterface::block
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/RequiredReason'}
+            example: {reason: Overdue invoices.}
+      responses:
+        '200': {$ref: '#/components/responses/CompanyResponse'}
+        '400': {$ref: '#/components/responses/InvalidTransition'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '404': {$ref: '#/components/responses/NotFound'}
+  /companies/{companyId}/unblock:
+    parameters:
+      - $ref: '#/components/parameters/CompanyId'
+    post:
+      tags: [Status]
+      summary: Unblock a blocked company
+      description: '`blocked` → `approved`.'
+      operationId: companyApprovalUnblock
+      x-acl-resource: MageOS_Company::company_approve
+      x-service: MageOS\Company\Api\CompanyApprovalInterface::unblock
+      requestBody:
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/OptionalComment'}
+      responses:
+        '200': {$ref: '#/components/responses/CompanyResponse'}
+        '400': {$ref: '#/components/responses/InvalidTransition'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '404': {$ref: '#/components/responses/NotFound'}
+  /companies/{companyId}/resubmit:
+    parameters:
+      - $ref: '#/components/parameters/CompanyId'
+    post:
+      tags: [Status]
+      summary: Reopen a rejected application
+      description: '`rejected` → `pending`. Emails "application received" with a new status link.'
+      operationId: companyApprovalResubmit
+      x-acl-resource: MageOS_Company::company_approve
+      x-service: MageOS\Company\Api\CompanyApprovalInterface::resubmit
+      requestBody:
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/OptionalComment'}
+      responses:
+        '200': {$ref: '#/components/responses/CompanyResponse'}
+        '400': {$ref: '#/components/responses/InvalidTransition'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '404': {$ref: '#/components/responses/NotFound'}
+  /companies/{companyId}/history:
+    parameters:
+      - $ref: '#/components/parameters/CompanyId'
+    get:
+      tags: [Status]
+      summary: Status history
+      description: Newest first.
+      operationId: companyApprovalGetHistory
+      x-acl-resource: MageOS_Company::company_view
+      x-service: MageOS\Company\Api\CompanyApprovalInterface::getHistory
+      responses:
+        '200':
+          description: History entries.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: '#/components/schemas/StatusHistory'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '404': {$ref: '#/components/responses/NotFound'}
+
+  # ------------------------------------------------------------------ admin: users
+  /companies/{companyId}/customers:
+    parameters:
+      - $ref: '#/components/parameters/CompanyId'
+    get:
+      tags: [Company users]
+      summary: List the users of a company
+      operationId: companyManagementGetCustomers
+      x-acl-resource: MageOS_Company::company_view
+      x-service: MageOS\Company\Api\CompanyManagementInterface::getCustomers
+      responses:
+        '200':
+          description: Company users.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: '#/components/schemas/CompanyCustomer'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '404': {$ref: '#/components/responses/NotFound'}
+    post:
+      tags: [Company users]
+      summary: Assign a customer to the company
+      description: |
+        Direct assignment (no invitation). The customer must not belong to another company and must be in the
+        company's website (unless accounts are shared globally). Assigning an existing member updates its role
+        and job title, subject to the role invariants.
+      operationId: companyManagementAssignCustomer
+      x-acl-resource: MageOS_Company::company_edit
+      x-service: MageOS\Company\Api\CompanyManagementInterface::assignCustomer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [customerId]
+              properties:
+                customerId: {type: integer}
+                role: {$ref: '#/components/schemas/Role'}
+                jobTitle: {type: string, nullable: true}
+            example: {customerId: 57, role: user, jobTitle: Buyer}
+      responses:
+        '200':
+          description: The company user.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/CompanyCustomer'}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '404': {$ref: '#/components/responses/NotFound'}
+  /companies/{companyId}/customers/{customerId}:
+    parameters:
+      - $ref: '#/components/parameters/CompanyId'
+      - $ref: '#/components/parameters/CustomerId'
+    delete:
+      tags: [Company users]
+      summary: Remove a user from the company
+      description: The customer account is kept. The super user and the last active admin cannot be removed.
+      operationId: companyManagementUnassignCustomer
+      x-acl-resource: MageOS_Company::company_edit
+      x-service: MageOS\Company\Api\CompanyManagementInterface::unassignCustomer
+      responses:
+        '200': {$ref: '#/components/responses/Success'}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '404': {$ref: '#/components/responses/NotFound'}
+  /companies/{companyId}/customers/{customerId}/status:
+    parameters:
+      - $ref: '#/components/parameters/CompanyId'
+      - $ref: '#/components/parameters/CustomerId'
+    put:
+      tags: [Company users]
+      summary: Activate or deactivate a user
+      description: Deactivating ends the user's sessions and tokens. The super user and the last active admin cannot be deactivated.
+      operationId: companyManagementSetCustomerStatus
+      x-acl-resource: MageOS_Company::company_edit
+      x-service: MageOS\Company\Api\CompanyManagementInterface::setCustomerStatus
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status: {$ref: '#/components/schemas/UserStatus'}
+            example: {status: 0}
+      responses:
+        '200':
+          description: The company user.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/CompanyCustomer'}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '404': {$ref: '#/components/responses/NotFound'}
+  /companies/{companyId}/super-user/{customerId}:
+    parameters:
+      - $ref: '#/components/parameters/CompanyId'
+      - $ref: '#/components/parameters/CustomerId'
+    put:
+      tags: [Company users]
+      summary: Set the super user (main contact)
+      description: The customer must be a user of the company; it becomes an active admin.
+      operationId: companyManagementSetSuperUser
+      x-acl-resource: MageOS_Company::company_edit
+      x-service: MageOS\Company\Api\CompanyManagementInterface::setSuperUser
+      responses:
+        '200': {$ref: '#/components/responses/CompanyResponse'}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '404': {$ref: '#/components/responses/NotFound'}
+
+  # ------------------------------------------------------------------ admin: addresses
+  /companies/{companyId}/addresses:
+    parameters:
+      - $ref: '#/components/parameters/CompanyId'
+    get:
+      tags: [Company addresses]
+      summary: List the addresses of a company
+      operationId: companyAddressManagementGetList
+      x-acl-resource: MageOS_Company::company_view
+      x-service: MageOS\Company\Api\CompanyAddressManagementInterface::getList
+      responses:
+        '200':
+          description: Addresses.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: '#/components/schemas/CompanyAddress'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '404': {$ref: '#/components/responses/NotFound'}
+    post:
+      tags: [Company addresses]
+      summary: Add an address
+      description: Required attributes follow the admin address form (`adminhtml_company_address`). Defaults are set on the company (`PUT /companies/{companyId}` with `default_billing`, `default_shipping`, `legal_address`).
+      operationId: companyAddressManagementCreate
+      x-acl-resource: MageOS_Company::company_edit
+      x-service: MageOS\Company\Api\CompanyAddressManagementInterface::save
+      requestBody:
+        $ref: '#/components/requestBodies/AddressBody'
+      responses:
+        '200': {$ref: '#/components/responses/AddressResponse'}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '404': {$ref: '#/components/responses/NotFound'}
+  /companies/{companyId}/addresses/{addressId}:
+    parameters:
+      - $ref: '#/components/parameters/CompanyId'
+      - $ref: '#/components/parameters/AddressId'
+    get:
+      tags: [Company addresses]
+      summary: Get an address
+      operationId: companyAddressManagementGet
+      x-acl-resource: MageOS_Company::company_view
+      x-service: MageOS\Company\Api\CompanyAddressManagementInterface::get
+      responses:
+        '200': {$ref: '#/components/responses/AddressResponse'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '404': {$ref: '#/components/responses/NotFound'}
+    delete:
+      tags: [Company addresses]
+      summary: Delete an address
+      description: Clears the company defaults that pointed to it.
+      operationId: companyAddressManagementDelete
+      x-acl-resource: MageOS_Company::company_edit
+      x-service: MageOS\Company\Api\CompanyAddressManagementInterface::delete
+      responses:
+        '200': {$ref: '#/components/responses/Success'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '404': {$ref: '#/components/responses/NotFound'}
+
+  # ------------------------------------------------------------------ admin: messages
+    put:
+      tags: [Company addresses]
+      summary: Update an address
+      description: 'Magento route: `PUT /V1/companies/:companyId/addresses/:id` (the placeholder is named `id` so the web API copies the address ID into the payload).'
+      operationId: companyAddressManagementUpdate
+      x-magento-route: /V1/companies/:companyId/addresses/:id
+      x-acl-resource: MageOS_Company::company_edit
+      x-service: MageOS\Company\Api\CompanyAddressManagementInterface::save
+      requestBody:
+        $ref: '#/components/requestBodies/AddressBody'
+      responses:
+        '200': {$ref: '#/components/responses/AddressResponse'}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '404': {$ref: '#/components/responses/NotFound'}
+  /companies/{companyId}/messages:
+    parameters:
+      - $ref: '#/components/parameters/CompanyId'
+    get:
+      tags: [Messages]
+      summary: Get the message thread
+      description: Oldest first.
+      operationId: messageManagementGetThread
+      x-acl-resource: MageOS_Company::messages
+      x-service: MageOS\Company\Api\MessageManagementInterface::getThread
+      parameters:
+        - name: includeInternal
+          in: query
+          description: Include internal notes.
+          schema: {type: boolean, default: false}
+      responses:
+        '200':
+          description: Messages.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: '#/components/schemas/Message'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '404': {$ref: '#/components/responses/NotFound'}
+    post:
+      tags: [Messages]
+      summary: Send a message (or internal note) as the store
+      description: |
+        The author is taken from the token: an admin user keeps its ID, an integration writes as admin without ID.
+        Non-internal messages are queued (`company.message.notify`) and emailed to the active company users
+        (to the applicant, with the status link, while pending or rejected). Internal notes are never shown or
+        sent to the company.
+      operationId: messageManagementSendAsAdmin
+      x-acl-resource: MageOS_Company::messages
+      x-service: MageOS\Company\Api\MessageManagementInterface::sendAsAdmin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [body]
+              properties:
+                body: {type: string, description: Plain text.}
+                isInternal: {type: boolean, default: false}
+            example: {body: Your order limit has been increased., isInternal: false}
+      responses:
+        '200':
+          description: The message.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Message'}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '404': {$ref: '#/components/responses/NotFound'}
+
+  # ------------------------------------------------------------------ mine
+  /companies/mine:
+    get:
+      tags: [My company]
+      summary: Get my company
+      operationId: myCompanyGet
+      x-acl-resource: self
+      x-company-resource: company.view
+      x-service: MageOS\Company\Api\MyCompanyManagementInterface::get
+      security: [{customerToken: []}]
+      responses:
+        '200': {$ref: '#/components/responses/CompanyResponse'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+    put:
+      tags: [My company]
+      summary: Update my company profile
+      description: Only the attributes of the `company_account_edit` form are applied and validated. Protected fields are ignored.
+      operationId: myCompanyUpdate
+      x-acl-resource: self
+      x-company-resource: company.edit
+      x-service: MageOS\Company\Api\MyCompanyManagementInterface::update
+      security: [{customerToken: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [company]
+              properties:
+                company: {$ref: '#/components/schemas/CompanyInput'}
+            example:
+              company:
+                name: ACME Industries
+                email: info@acme.example
+                custom_attributes:
+                  - {attribute_code: legal_name, value: ACME Industries SL}
+                  - {attribute_code: vat_id, value: B12345678}
+                  - {attribute_code: phone, value: '+34 600 000 000'}
+      responses:
+        '200': {$ref: '#/components/responses/CompanyResponse'}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+  /companies/mine/addresses:
+    get:
+      tags: [My company]
+      summary: List my company addresses
+      operationId: myCompanyGetAddresses
+      x-acl-resource: self
+      x-company-resource: company.address.view
+      x-service: MageOS\Company\Api\MyCompanyManagementInterface::getAddresses
+      security: [{customerToken: []}]
+      responses:
+        '200':
+          description: Addresses.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: '#/components/schemas/CompanyAddress'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+    post:
+      tags: [My company]
+      summary: Add an address to my company
+      description: Only the attributes of the `company_address_edit` form are applied. `parent_id` is ignored.
+      operationId: myCompanyCreateAddress
+      x-acl-resource: self
+      x-company-resource: company.address.manage
+      x-service: MageOS\Company\Api\MyCompanyManagementInterface::saveAddress
+      security: [{customerToken: []}]
+      requestBody:
+        $ref: '#/components/requestBodies/AddressBody'
+      responses:
+        '200': {$ref: '#/components/responses/AddressResponse'}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+  /companies/mine/addresses/{addressId}:
+    parameters:
+      - $ref: '#/components/parameters/AddressId'
+    get:
+      tags: [My company]
+      summary: Get an address of my company
+      operationId: myCompanyGetAddress
+      x-acl-resource: self
+      x-company-resource: company.address.view
+      x-service: MageOS\Company\Api\MyCompanyManagementInterface::getAddress
+      security: [{customerToken: []}]
+      responses:
+        '200': {$ref: '#/components/responses/AddressResponse'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '404': {$ref: '#/components/responses/NotFound'}
+    delete:
+      tags: [My company]
+      summary: Delete an address of my company
+      operationId: myCompanyDeleteAddress
+      x-acl-resource: self
+      x-company-resource: company.address.manage
+      x-service: MageOS\Company\Api\MyCompanyManagementInterface::deleteAddress
+      security: [{customerToken: []}]
+      responses:
+        '200': {$ref: '#/components/responses/Success'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '404': {$ref: '#/components/responses/NotFound'}
+
+    put:
+      tags: [My company]
+      summary: Update an address of my company
+      description: 'Magento route: `PUT /V1/companies/mine/addresses/:id`.'
+      operationId: myCompanyUpdateAddress
+      x-magento-route: /V1/companies/mine/addresses/:id
+      x-acl-resource: self
+      x-company-resource: company.address.manage
+      x-service: MageOS\Company\Api\MyCompanyManagementInterface::saveAddress
+      security: [{customerToken: []}]
+      requestBody:
+        $ref: '#/components/requestBodies/AddressBody'
+      responses:
+        '200': {$ref: '#/components/responses/AddressResponse'}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '404': {$ref: '#/components/responses/NotFound'}
+  /companies/mine/addresses/{addressId}/default/{type}:
+    parameters:
+      - $ref: '#/components/parameters/AddressId'
+      - name: type
+        in: path
+        required: true
+        schema:
+          type: string
+          enum: [default_billing, default_shipping, legal_address]
+    put:
+      tags: [My company]
+      summary: Set a default address of my company
+      operationId: myCompanySetDefaultAddress
+      x-acl-resource: self
+      x-company-resource: company.address.manage
+      x-service: MageOS\Company\Api\MyCompanyManagementInterface::setDefaultAddress
+      security: [{customerToken: []}]
+      responses:
+        '200': {$ref: '#/components/responses/CompanyResponse'}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '404': {$ref: '#/components/responses/NotFound'}
+  /companies/mine/customers:
+    get:
+      tags: [My company]
+      summary: List the users of my company
+      operationId: myCompanyGetUsers
+      x-acl-resource: self
+      x-company-resource: company.users.manage
+      x-service: MageOS\Company\Api\MyCompanyManagementInterface::getUsers
+      security: [{customerToken: []}]
+      responses:
+        '200':
+          description: Company users.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: '#/components/schemas/CompanyCustomer'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+    post:
+      tags: [My company]
+      summary: Invite a user
+      description: |
+        Sends an invitation email; the person joins when accepting the link (`/company/invitation/accept`).
+        Inviting the same email again replaces the open invitation. Members of the own company cannot be invited;
+        members of another company are refused with a generic message.
+      operationId: myCompanyInviteUser
+      x-acl-resource: self
+      x-company-resource: company.users.manage
+      x-service: MageOS\Company\Api\MyCompanyManagementInterface::inviteUser
+      security: [{customerToken: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email: {type: string, format: email}
+                role: {$ref: '#/components/schemas/Role'}
+                jobTitle: {type: string, nullable: true}
+            example: {email: jane@acme.example, role: user, jobTitle: Buyer}
+      responses:
+        '200': {$ref: '#/components/responses/Success'}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+  /companies/mine/customers/{userId}:
+    parameters:
+      - name: userId
+        in: path
+        required: true
+        description: Customer ID of the company user.
+        schema: {type: integer}
+    put:
+      tags: [My company]
+      summary: Update a user of my company
+      description: Changes role, job title and (optionally) status. The super user and the last active admin cannot be demoted or deactivated.
+      operationId: myCompanyUpdateUser
+      x-acl-resource: self
+      x-company-resource: company.users.manage
+      x-service: MageOS\Company\Api\MyCompanyManagementInterface::updateUser
+      security: [{customerToken: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [role]
+              properties:
+                role: {$ref: '#/components/schemas/Role'}
+                jobTitle: {type: string, nullable: true}
+                status: {$ref: '#/components/schemas/UserStatus'}
+            example: {role: admin, jobTitle: Purchasing Manager, status: 1}
+      responses:
+        '200':
+          description: The company user.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/CompanyCustomer'}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '404': {$ref: '#/components/responses/NotFound'}
+    delete:
+      tags: [My company]
+      summary: Remove a user from my company
+      description: The customer account is kept.
+      operationId: myCompanyRemoveUser
+      x-acl-resource: self
+      x-company-resource: company.users.manage
+      x-service: MageOS\Company\Api\MyCompanyManagementInterface::removeUser
+      security: [{customerToken: []}]
+      responses:
+        '200': {$ref: '#/components/responses/Success'}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '404': {$ref: '#/components/responses/NotFound'}
+  /companies/mine/messages:
+    get:
+      tags: [My company]
+      summary: Get my company's message thread
+      description: Oldest first. Internal notes are never included.
+      operationId: myCompanyGetMessages
+      x-acl-resource: self
+      x-company-resource: company.messages.view
+      x-service: MageOS\Company\Api\MyCompanyManagementInterface::getMessages
+      security: [{customerToken: []}]
+      responses:
+        '200':
+          description: Messages.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: '#/components/schemas/Message'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+    post:
+      tags: [My company]
+      summary: Send a message to the store
+      description: Plain text, subject to the configured maximum length and hourly rate limit. The store is notified by email and admin inbox.
+      operationId: myCompanySendMessage
+      x-acl-resource: self
+      x-company-resource: company.messages.send
+      x-service: MageOS\Company\Api\MyCompanyManagementInterface::sendMessage
+      security: [{customerToken: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [body]
+              properties:
+                body: {type: string}
+            example: {body: 'Could you send us the updated price list?'}
+      responses:
+        '200':
+          description: The message.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Message'}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+  /companies/mine/messages/read:
+    post:
+      tags: [My company]
+      summary: Mark the store messages as read
+      operationId: myCompanyMarkMessagesRead
+      x-acl-resource: self
+      x-company-resource: company.messages.view
+      x-service: MageOS\Company\Api\MyCompanyManagementInterface::markMessagesRead
+      security: [{customerToken: []}]
+      responses:
+        '200':
+          description: Number of messages marked as read.
+          content:
+            application/json:
+              schema: {type: integer}
+              example: 2
+        '401': {$ref: '#/components/responses/Unauthorized'}
+
+  # ------------------------------------------------------------------ registration
+  /companies/register:
+    post:
+      tags: [Registration]
+      summary: Apply for a company account
+      description: |
+        Creates a new customer, the company and its legal address in one transaction.
+
+        * Only the attributes of the `company_register` and `company_address_register` forms are taken.
+        * The customer is always new: its ID, group and website are ignored. An existing customer email gives a
+          generic error; a duplicated company email is reported.
+        * The company is `pending` (or `approved` with auto-approval). The applicant receives "application received"
+          with a status link; the store's admin recipients are notified.
+        * Requires the `X-ReCaptcha` header when reCAPTCHA is enabled for company registration.
+      operationId: companyRegistrationApply
+      x-acl-resource: anonymous
+      x-service: MageOS\Company\Api\CompanyRegistrationInterface::apply
+      security: []
+      parameters:
+        - name: X-ReCaptcha
+          in: header
+          required: false
+          description: reCAPTCHA response token, when enabled (`recaptcha_frontend/type_for/company_register`).
+          schema: {type: string}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [company, customer, password, legalAddress]
+              properties:
+                company: {$ref: '#/components/schemas/CompanyInput'}
+                customer: {$ref: '#/components/schemas/ApplicantCustomer'}
+                password: {type: string, format: password}
+                legalAddress: {$ref: '#/components/schemas/CompanyAddressInput'}
+            example:
+              company:
+                name: ACME
+                email: info@acme.example
+                custom_attributes:
+                  - {attribute_code: legal_name, value: ACME Industries SL}
+                  - {attribute_code: vat_id, value: B12345678}
+                  - {attribute_code: phone, value: '+34 600 000 000'}
+              customer:
+                firstname: Ana
+                lastname: García
+                email: ana@acme.example
+              password: S3cure-Passw0rd!
+              legalAddress:
+                firstname: Ana
+                lastname: García
+                street: [Calle Mayor 1]
+                city: Madrid
+                country_id: ES
+                region_id: 161
+                postcode: '28001'
+                telephone: '+34 600 000 001'
+      responses:
+        '200':
+          description: The registered company (status 0 pending, or 1 approved with auto-approval).
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Company'}
+        '400': {$ref: '#/components/responses/BadRequest'}
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: Admin token or integration access token. The route's ACL resource (`x-acl-resource`) must be granted.
+    customerToken:
+      type: http
+      scheme: bearer
+      description: Customer token of an active user of an approved company.
+
+  parameters:
+    CompanyId:
+      name: companyId
+      in: path
+      required: true
+      schema: {type: integer}
+      example: 53
+    CustomerId:
+      name: customerId
+      in: path
+      required: true
+      schema: {type: integer}
+      example: 56
+    AddressId:
+      name: addressId
+      in: path
+      required: true
+      schema: {type: integer}
+      example: 44
+    SearchCriteriaField:
+      name: searchCriteria[filterGroups][0][filters][0][field]
+      in: query
+      schema: {type: string}
+      example: status
+    SearchCriteriaValue:
+      name: searchCriteria[filterGroups][0][filters][0][value]
+      in: query
+      schema: {type: string}
+      example: '0'
+    SearchCriteriaConditionType:
+      name: searchCriteria[filterGroups][0][filters][0][conditionType]
+      in: query
+      schema: {type: string, default: eq, enum: [eq, neq, like, nlike, in, nin, gt, gteq, lt, lteq, 'null', notnull, finset]}
+    SearchCriteriaSortField:
+      name: searchCriteria[sortOrders][0][field]
+      in: query
+      schema: {type: string}
+      example: created_at
+    SearchCriteriaSortDirection:
+      name: searchCriteria[sortOrders][0][direction]
+      in: query
+      schema: {type: string, enum: [ASC, DESC]}
+    SearchCriteriaPageSize:
+      name: searchCriteria[pageSize]
+      in: query
+      schema: {type: integer}
+      example: 20
+    SearchCriteriaCurrentPage:
+      name: searchCriteria[currentPage]
+      in: query
+      schema: {type: integer}
+      example: 1
+
+  requestBodies:
+    AddressBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [address]
+            properties:
+              address: {$ref: '#/components/schemas/CompanyAddressInput'}
+          example:
+            address:
+              firstname: Ana
+              lastname: García
+              company: ACME
+              street: [Gran Vía 2, Planta 3]
+              city: Madrid
+              country_id: ES
+              region_id: 161
+              postcode: '28013'
+              telephone: '+34 600 000 002'
+              custom_attributes:
+                - {attribute_code: label, value: Warehouse 2}
+
+  responses:
+    Success:
+      description: Operation succeeded.
+      content:
+        application/json:
+          schema: {type: boolean}
+          example: true
+    CompanyResponse:
+      description: The company.
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/Company'}
+    AddressResponse:
+      description: The address.
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/CompanyAddress'}
+    BadRequest:
+      description: Validation error or business rule violation.
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/Error'}
+          examples:
+            validation:
+              value:
+                message: '"%1" is not a valid VAT number.'
+                parameters: [X]
+            input:
+              value:
+                message: One or more input exceptions have occurred.
+                errors:
+                  - message: '"%fieldName" is required. Enter and try again.'
+                    parameters: {fieldName: Legal Name}
+    InvalidTransition:
+      description: The current status does not allow the transition, or a required reason is missing.
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/Error'}
+          examples:
+            transition:
+              value:
+                message: This action needs the status "%1", but the company is "%2".
+                parameters: [Pending Approval, Rejected]
+            reason:
+              value:
+                message: A reason is required to set the status "%1".
+                parameters: [Rejected]
+    Unauthorized:
+      description: Missing or invalid token, missing ACL resource, or missing company permission.
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/Error'}
+          examples:
+            acl:
+              summary: Missing ACL resource or token
+              value:
+                message: The consumer isn't authorized to access %resources.
+                parameters: {resources: 'MageOS_Company::company_view'}
+            companyPermission:
+              summary: '"mine" route without the company permission'
+              value:
+                message: You are not allowed to do that.
+    NotFound:
+      description: Entity not found, or not part of the caller's company.
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/Error'}
+          example:
+            message: No such entity with %fieldName = %fieldValue
+            parameters: {fieldName: companyId, fieldValue: 999999}
+
+  schemas:
+    CompanyStatus:
+      type: integer
+      enum: [0, 1, 2, 3]
+      description: 0 pending, 1 approved, 2 rejected, 3 blocked.
+    Role:
+      type: string
+      enum: [admin, user]
+      default: user
+    UserStatus:
+      type: integer
+      enum: [0, 1]
+      description: 1 active, 0 inactive.
+    CustomAttribute:
+      type: object
+      required: [attribute_code]
+      properties:
+        attribute_code: {type: string, example: vat_id}
+        value:
+          type: string
+          nullable: true
+          description: Option ID for selects, comma-separated option IDs for multiselects, `""` to clear.
+          example: B12345678
+    Company:
+      type: object
+      properties:
+        id: {type: integer, example: 53}
+        name: {type: string, example: ACME}
+        company_id: {type: string, nullable: true, description: 'ERP code (unique). Omitted when empty.', example: C-10045}
+        status: {$ref: '#/components/schemas/CompanyStatus'}
+        email: {type: string, format: email, example: info@acme.example}
+        website_id: {type: integer, example: 1}
+        super_user_id: {type: integer, nullable: true, example: 56}
+        default_billing: {type: integer, nullable: true, description: Address ID, example: 44}
+        default_shipping: {type: integer, nullable: true, description: Address ID, example: 44}
+        legal_address: {type: integer, nullable: true, description: Address ID, example: 44}
+        created_at: {type: string, example: '2026-10-21 09:42:10'}
+        updated_at: {type: string, example: '2026-10-21 12:36:56'}
+        custom_attributes:
+          type: array
+          items: {$ref: '#/components/schemas/CustomAttribute'}
+          example:
+            - {attribute_code: legal_name, value: ACME Industries SL}
+            - {attribute_code: vat_id, value: B12345678}
+            - {attribute_code: phone, value: '+34 600 000 000'}
+            - {attribute_code: industry, value: '214'}
+        extension_attributes: {type: object}
+    CompanyInput:
+      type: object
+      description: |
+        Company payload. Which fields are applied depends on the operation:
+        admin `create`/`update` use the admin form (protected fields ignored, see each route);
+        `PUT /mine` uses `company_account_edit`; registration uses `company_register`.
+      properties:
+        name: {type: string, maxLength: 255}
+        email: {type: string, format: email}
+        website_id: {type: integer, description: Admin create only.}
+        super_user_id: {type: integer, description: 'Admin update: must be a user of the company (prefer `PUT /super-user`).'}
+        default_billing: {type: integer, description: 'Admin update: address ID of the company.'}
+        default_shipping: {type: integer, description: 'Admin update: address ID of the company.'}
+        legal_address: {type: integer, description: 'Admin update: address ID of the company.'}
+        custom_attributes:
+          type: array
+          items: {$ref: '#/components/schemas/CustomAttribute'}
+    CompanySearchResults:
+      type: object
+      properties:
+        items:
+          type: array
+          items: {$ref: '#/components/schemas/Company'}
+        search_criteria: {type: object}
+        total_count: {type: integer}
+    CompanyAddress:
+      type: object
+      properties:
+        id: {type: integer, example: 44}
+        parent_id: {type: integer, description: Company ID, example: 53}
+        is_active: {type: boolean, example: true}
+        firstname: {type: string, example: Ana}
+        lastname: {type: string, example: García}
+        company: {type: string, nullable: true, example: ACME}
+        street:
+          type: array
+          items: {type: string}
+          example: [Calle Mayor 1]
+        city: {type: string, example: Madrid}
+        country_id: {type: string, description: ISO 3166-1 alpha-2, example: ES}
+        region: {type: string, nullable: true, example: Madrid}
+        region_id: {type: integer, nullable: true, example: 161}
+        postcode: {type: string, nullable: true, example: '28001'}
+        telephone: {type: string, example: '+34 600 000 001'}
+        vat_id: {type: string, nullable: true}
+        custom_attributes:
+          type: array
+          description: EAV address attributes, e.g. `label`.
+          items: {$ref: '#/components/schemas/CustomAttribute'}
+          example:
+            - {attribute_code: label, value: Headquarters}
+        extension_attributes: {type: object}
+    CompanyAddressInput:
+      type: object
+      description: Address payload. `id` and `parent_id` are taken from the route and the company, never from the body.
+      properties:
+        firstname: {type: string}
+        lastname: {type: string}
+        company: {type: string}
+        street:
+          type: array
+          maxItems: 2
+          items: {type: string}
+        city: {type: string}
+        country_id: {type: string}
+        region: {type: string}
+        region_id: {type: integer}
+        postcode: {type: string}
+        telephone: {type: string}
+        vat_id: {type: string}
+        custom_attributes:
+          type: array
+          items: {$ref: '#/components/schemas/CustomAttribute'}
+    CompanyCustomer:
+      type: object
+      description: A customer acting for a company.
+      properties:
+        customer_id: {type: integer, example: 56}
+        company_entity_id: {type: integer, example: 53}
+        role: {$ref: '#/components/schemas/Role'}
+        job_title: {type: string, nullable: true, example: Buyer}
+        status: {$ref: '#/components/schemas/UserStatus'}
+        created_at: {type: string, example: '2026-10-21 09:42:10'}
+    ApplicantCustomer:
+      type: object
+      description: New customer account of the applicant (`Magento\Customer\Api\Data\CustomerInterface`; only the fields below are used).
+      required: [firstname, lastname, email]
+      properties:
+        firstname: {type: string}
+        lastname: {type: string}
+        email: {type: string, format: email}
+    StatusHistory:
+      type: object
+      properties:
+        history_id: {type: integer, example: 94}
+        company_entity_id: {type: integer, example: 53}
+        from_status:
+          allOf: [{$ref: '#/components/schemas/CompanyStatus'}]
+          description: Omitted on creation.
+        to_status: {$ref: '#/components/schemas/CompanyStatus'}
+        comment: {type: string, nullable: true, example: Welcome aboard}
+        actor_type: {type: string, enum: [admin, customer, system, integration]}
+        actor_id: {type: integer, nullable: true, example: 1}
+        created_at: {type: string, example: '2026-10-21 12:36:56'}
+    Message:
+      type: object
+      properties:
+        message_id: {type: integer, example: 81}
+        company_entity_id: {type: integer, example: 53}
+        author_type: {type: string, enum: [admin, customer, system]}
+        author_id: {type: integer, nullable: true, description: 'Admin user ID or customer ID; omitted for system and integration messages.', example: 56}
+        body: {type: 'string', example: 'Could you send us the updated price list?'}
+        is_internal: {type: boolean, description: 'Internal note (only in admin responses with includeInternal).', example: false}
+        read_at_admin: {type: string, nullable: true, example: '2026-10-21 12:48:01'}
+        read_at_customer: {type: string, nullable: true, example: '2026-10-21 12:47:08'}
+        created_at: {type: string, example: '2026-10-21 12:47:08'}
+    OptionalComment:
+      type: object
+      properties:
+        comment: {type: string, nullable: true}
+    RequiredReason:
+      type: object
+      required: [reason]
+      properties:
+        reason: {type: string, minLength: 1}
+    Error:
+      type: object
+      required: [message]
+      properties:
+        message: {type: string, description: 'Message with %placeholders.'}
+        parameters:
+          description: Placeholder values (list or map).
+          oneOf:
+            - type: array
+              items: {}
+            - type: object
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              message: {type: string}
+              parameters: {}
+        trace: {type: string, description: Developer mode only.}

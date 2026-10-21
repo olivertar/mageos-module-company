@@ -1,0 +1,25 @@
+<!--@subject {{trans "New company application: %company_name" company_name=$company_name}} @-->
+<!--@vars {
+"var company_name":"Company Name",
+"var company_email":"Company Email",
+"var applicant_name":"Applicant Name",
+"var applicant_email":"Applicant Email",
+"var company_url":"Admin Company URL"
+} @-->
+
+{{template config_path="design/email/header_template"}}
+
+<p>{{trans "A new company application has been submitted."}}</p>
+<ul>
+    <li><strong>{{trans "Company:"}}</strong> {{var company_name}} ({{var company_email}})</li>
+    <li><strong>{{trans "Applicant:"}}</strong> {{var applicant_name}} ({{var applicant_email}})</li>
+</ul>
+<p>
+    {{trans
+        '<a href="%company_url">Review the application</a> in the admin panel.'
+
+        company_url=$company_url
+    |raw}}
+</p>
+
+{{template config_path="design/email/footer_template"}}

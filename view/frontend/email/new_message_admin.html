@@ -1,0 +1,21 @@
+<!--@subject {{trans "New message from %company_name" company_name=$company_name}} @-->
+<!--@vars {
+"var company_name":"Company Name",
+"var author_name":"Author Name",
+"var body":"Message",
+"var company_url":"Admin Company URL"
+} @-->
+
+{{template config_path="design/email/header_template"}}
+
+<p>{{trans "%author_name from %company_name sent a new message:" author_name=$author_name company_name=$company_name}}</p>
+<blockquote style="white-space: pre-line;">{{var body}}</blockquote>
+<p>
+    {{trans
+        '<a href="%company_url">Reply</a> from the admin panel.'
+
+        company_url=$company_url
+    |raw}}
+</p>
+
+{{template config_path="design/email/footer_template"}}

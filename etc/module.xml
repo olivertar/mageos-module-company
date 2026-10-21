@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Module/etc/module.xsd">
+    <module name="MageOS_Company">
+        <sequence>
+            <module name="Magento_Store"/>
+            <module name="Magento_Directory"/>
+            <module name="Magento_Eav"/>
+            <module name="Magento_Customer"/>
+            <module name="Magento_Ui"/>
+            <module name="Magento_Authorization"/>
+            <module name="Magento_Integration"/>
+            <module name="Magento_Email"/>
+            <module name="Magento_User"/>
+            <module name="Magento_AdminNotification"/>
+            <module name="Magento_MessageQueue"/>
+            <module name="Magento_ReCaptchaUi"/>
+            <module name="Magento_ReCaptchaAdminUi"/>
+            <module name="Magento_ReCaptchaFrontendUi"/>
+            <module name="Magento_ReCaptchaWebapiApi"/>
+            <module name="Magento_Webapi"/>
+        </sequence>
+    </module>
+</config>

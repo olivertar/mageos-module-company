@@ -1,0 +1,26 @@
+.company-message-thread {
+    list-style: none;
+    margin: 0 0 2rem;
+    padding: 0;
+}
+
+.company-message {
+    border-left: 3px solid #adadad;
+    margin-bottom: 1rem;
+    padding: .5rem 1rem;
+}
+
+.company-message-customer {
+    border-left-color: #007bdb;
+}
+
+.company-message-internal {
+    background: #fffbbb;
+    border-left-color: #eb5202;
+}
+
+.company-message-meta {
+    color: #666;
+    font-size: 1.2rem;
+    margin-bottom: .3rem;
+}

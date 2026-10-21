@@ -1,0 +1,77 @@
+<?php
+/**
+ * Company address book.
+ *
+ * @var \Magento\Framework\View\Element\Template $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+
+use MageOS\Company\Api\CompanyAuthorizationInterface as Auth;
+
+/** @var \MageOS\Company\ViewModel\CompanyAccount $viewModel */
+$viewModel = $block->getData('view_model');
+$canManage = $viewModel->isAllowed(Auth::RESOURCE_ADDRESS_MANAGE);
+$addresses = $viewModel->getAddresses();
+$formKey = $block->getBlockHtml('formkey');
+?>
+<?php if (!$addresses): ?>
+    <div class="message info empty">
+        <span><?= $escaper->escapeHtml(__('The company has no addresses yet.')) ?></span>
+    </div>
+<?php else: ?>
+    <ol class="items addresses company-addresses">
+        <?php foreach ($addresses as $address): ?>
+            <li class="item">
+                <address>
+                    <?= /* @noEscape */ implode('<br/>', array_map(
+                        [$escaper, 'escapeHtml'],
+                        $viewModel->formatAddress($address)
+                    )) ?>
+                </address>
+                <?php foreach ($viewModel->getDefaultLabels($address) as $label): ?>
+                    <p><strong><?= $escaper->escapeHtml($label) ?></strong></p>
+                <?php endforeach; ?>
+                <?php if ($canManage): ?>
+                    <div class="item actions">
+                        <?php $actionUrl = $viewModel->getUrl('company/address/edit', ['id' => $address->getId()]); ?>
+                        <a class="action edit"
+                           href="<?= $escaper->escapeUrl($actionUrl) ?>">
+                            <span><?= $escaper->escapeHtml(__('Edit')) ?></span>
+                        </a>
+                        <?php foreach ($viewModel->getAvailableDefaults($address) as $type => $label): ?>
+                            <form method="post" class="company-inline-action"
+                                  action="<?= $escaper->escapeUrl($viewModel->getUrl('company/address/setDefault')) ?>">
+                                <?= /* @noEscape */ $formKey ?>
+                                <input type="hidden" name="id" value="<?= (int)$address->getId() ?>"/>
+                                <input type="hidden" name="type" value="<?= $escaper->escapeHtmlAttr($type) ?>"/>
+                                <button type="submit" class="action link">
+                                    <span><?= $escaper->escapeHtml($label) ?></span>
+                                </button>
+                            </form>
+                        <?php endforeach; ?>
+                        <form method="post" class="company-inline-action"
+                              action="<?= $escaper->escapeUrl($viewModel->getUrl('company/address/delete')) ?>"
+                              data-mage-init='<?= $escaper->escapeHtmlAttr(json_encode([
+                                  'MageOS_Company/js/confirm-submit' => ['message' => __('Delete this address?')],
+                              ])) ?>'>
+                            <?= /* @noEscape */ $formKey ?>
+                            <input type="hidden" name="id" value="<?= (int)$address->getId() ?>"/>
+                            <button type="submit" class="action delete">
+                                <span><?= $escaper->escapeHtml(__('Delete')) ?></span>
+                            </button>
+                        </form>
+                    </div>
+                <?php endif; ?>
+            </li>
+        <?php endforeach; ?>
+    </ol>
+<?php endif; ?>
+<?php if ($canManage): ?>
+    <div class="actions-toolbar">
+        <div class="primary">
+            <a class="action primary add" href="<?= $escaper->escapeUrl($viewModel->getUrl('company/address/edit')) ?>">
+                <span><?= $escaper->escapeHtml(__('Add New Address')) ?></span>
+            </a>
+        </div>
+    </div>
+<?php endif; ?>

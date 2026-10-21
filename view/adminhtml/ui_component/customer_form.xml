@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <htmlContent name="company_content">
+        <block acl="MageOS_Company::company_view" class="MageOS\Company\Block\Adminhtml\Customer\Edit\Tab\Company"
+               name="mageos_company_customer_tab" template="MageOS_Company::customer/tab/company.phtml"/>
+    </htmlContent>
+</form>

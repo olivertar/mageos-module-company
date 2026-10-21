@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<listing xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <argument name="data" xsi:type="array">
+        <item name="js_config" xsi:type="array">
+            <item name="provider" xsi:type="string">company_attribute_listing.company_attribute_listing_data_source</item>
+        </item>
+    </argument>
+    <settings>
+        <buttons>
+            <button name="add_address">
+                <url path="*/*/new">
+                    <param name="entity_type">company_address</param>
+                </url>
+                <label translate="true">Add Company Address Attribute</label>
+            </button>
+            <button name="add">
+                <url path="*/*/new">
+                    <param name="entity_type">company</param>
+                </url>
+                <class>primary</class>
+                <label translate="true">Add Company Attribute</label>
+            </button>
+        </buttons>
+        <spinner>company_attribute_columns</spinner>
+        <deps>
+            <dep>company_attribute_listing.company_attribute_listing_data_source</dep>
+        </deps>
+    </settings>
+    <dataSource name="company_attribute_listing_data_source" component="Magento_Ui/js/grid/provider">
+        <settings>
+            <storageConfig>
+                <param name="indexField" xsi:type="string">attribute_id</param>
+            </storageConfig>
+            <updateUrl path="mui/index/render"/>
+        </settings>
+        <aclResource>MageOS_Company::attributes</aclResource>
+        <dataProvider class="MageOS\Company\Ui\DataProvider\Attribute\ListingDataProvider"
+                      name="company_attribute_listing_data_source">
+            <settings>
+                <requestFieldName>id</requestFieldName>
+                <primaryFieldName>attribute_id</primaryFieldName>
+            </settings>
+        </dataProvider>
+    </dataSource>
+    <listingToolbar name="listing_top">
+        <settings>
+            <sticky>true</sticky>
+        </settings>
+        <bookmark name="bookmarks"/>
+        <columnsControls name="columns_controls"/>
+        <filters name="listing_filters"/>
+        <paging name="listing_paging"/>
+    </listingToolbar>
+    <columns name="company_attribute_columns">
+        <column name="attribute_code" sortOrder="10">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">Attribute Code</label>
+            </settings>
+        </column>
+        <column name="frontend_label" sortOrder="20">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">Default Label</label>
+            </settings>
+        </column>
+        <column name="entity_type_code" component="Magento_Ui/js/grid/columns/select" sortOrder="30">
+            <settings>
+                <filter>select</filter>
+                <options class="MageOS\Company\Model\Attribute\Source\EntityType"/>
+                <dataType>select</dataType>
+                <label translate="true">Entity</label>
+            </settings>
+        </column>
+        <column name="frontend_input" component="Magento_Ui/js/grid/columns/select" sortOrder="40">
+            <settings>
+                <filter>select</filter>
+                <options class="MageOS\Company\Model\Attribute\Source\FrontendInput"/>
+                <dataType>select</dataType>
+                <label translate="true">Input Type</label>
+            </settings>
+        </column>
+        <column name="is_required" component="Magento_Ui/js/grid/columns/select" sortOrder="50">
+            <settings>
+                <filter>select</filter>
+                <options class="Magento\Config\Model\Config\Source\Yesno"/>
+                <dataType>select</dataType>
+                <label translate="true">Required</label>
+            </settings>
+        </column>
+        <column name="is_user_defined" component="Magento_Ui/js/grid/columns/select" sortOrder="60">
+            <settings>
+                <filter>select</filter>
+                <options class="MageOS\Company\Model\Attribute\Source\Origin"/>
+                <dataType>select</dataType>
+                <label translate="true">Origin</label>
+            </settings>
+        </column>
+        <column name="is_used_in_grid" component="Magento_Ui/js/grid/columns/select" sortOrder="70">
+            <settings>
+                <filter>select</filter>
+                <options class="Magento\Config\Model\Config\Source\Yesno"/>
+                <dataType>select</dataType>
+                <label translate="true">In Company Grid</label>
+            </settings>
+        </column>
+        <column name="sort_order" sortOrder="80">
+            <settings>
+                <filter>textRange</filter>
+                <label translate="true">Sort Order</label>
+                <sorting>asc</sorting>
+            </settings>
+        </column>
+        <actionsColumn name="actions" class="MageOS\Company\Ui\Component\Listing\Column\AttributeActions"
+                       sortOrder="200">
+            <settings>
+                <indexField>attribute_id</indexField>
+            </settings>
+        </actionsColumn>
+    </columns>
+</listing>

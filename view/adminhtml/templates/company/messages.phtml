@@ -1,0 +1,35 @@
+<?php
+/**
+ * Message thread and reply form of the company form.
+ *
+ * @var \MageOS\Company\Block\Adminhtml\Company\Edit\Messages $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+
+$config = ['url' => $block->getSendUrl(), 'companyId' => $block->getCompanyId()];
+?>
+<div class="company-messages" data-mage-init='<?= $escaper->escapeHtmlAttr(json_encode([
+    'MageOS_Company/js/company/messages' => $config,
+])) ?>'>
+    <div data-role="thread">
+        <?= $block->getChildHtml('thread') ?>
+    </div>
+    <div class="admin__field">
+        <label class="admin__field-label" for="company-message-body">
+            <span><?= $escaper->escapeHtml(__('Reply')) ?></span>
+        </label>
+        <div class="admin__field-control">
+            <textarea id="company-message-body" class="admin__control-textarea" rows="4"
+                      data-role="body"></textarea>
+        </div>
+    </div>
+    <div class="admin__field admin__field-option">
+        <input type="checkbox" id="company-message-internal" class="admin__control-checkbox" data-role="internal"/>
+        <label class="admin__field-label" for="company-message-internal">
+            <?= $escaper->escapeHtml(__('Internal note (not visible to the company)')) ?>
+        </label>
+    </div>
+    <button type="button" class="action-secondary" data-role="send">
+        <span><?= $escaper->escapeHtml(__('Send Message')) ?></span>
+    </button>
+</div>

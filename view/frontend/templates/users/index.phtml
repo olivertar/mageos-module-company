@@ -1,0 +1,163 @@
+<?php
+/**
+ * Company users, open invitations and invitation form.
+ *
+ * @var \Magento\Framework\View\Element\Template $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+
+/** @var \MageOS\Company\ViewModel\CompanyAccount $viewModel */
+$viewModel = $block->getData('view_model');
+$formKey = $block->getBlockHtml('formkey');
+$invitations = $viewModel->getInvitations();
+?>
+<div class="table-wrapper company-users">
+    <table class="data table">
+        <caption class="table-caption"><?= $escaper->escapeHtml(__('Company Users')) ?></caption>
+        <thead>
+        <tr>
+            <th scope="col"><?= $escaper->escapeHtml(__('Name')) ?></th>
+            <th scope="col"><?= $escaper->escapeHtml(__('Email')) ?></th>
+            <th scope="col"><?= $escaper->escapeHtml(__('Role')) ?></th>
+            <th scope="col"><?= $escaper->escapeHtml(__('Job Title')) ?></th>
+            <th scope="col"><?= $escaper->escapeHtml(__('Status')) ?></th>
+            <th scope="col" class="actions"><?= $escaper->escapeHtml(__('Actions')) ?></th>
+        </tr>
+        </thead>
+        <tbody>
+        <?php foreach ($viewModel->getUsers() as $user): ?>
+            <tr>
+                <td>
+                    <?= $escaper->escapeHtml($user['name']) ?>
+                    <?php if ($user['is_super_user']): ?>
+                        <br/><small><?= $escaper->escapeHtml(__('Main contact')) ?></small>
+                    <?php endif; ?>
+                </td>
+                <td><?= $escaper->escapeHtml($user['email']) ?></td>
+                <td><?= $escaper->escapeHtml($viewModel->getRoleLabel($user['role'])) ?></td>
+                <td><?= $escaper->escapeHtml($user['job_title']) ?></td>
+                <td><?= $escaper->escapeHtml($user['active'] ? __('Active') : __('Inactive')) ?></td>
+                <td class="actions">
+                    <?php $actionUrl = $viewModel->getUrl('company/users/edit', ['id' => $user['customer_id']]); ?>
+                    <a class="action edit"
+                       href="<?= $escaper->escapeUrl($actionUrl) ?>">
+                        <span><?= $escaper->escapeHtml(__('Edit')) ?></span>
+                    </a>
+                    <?php if (!$user['is_super_user'] && !$user['is_self']): ?>
+                        <form method="post" class="company-inline-action"
+                              action="<?= $escaper->escapeUrl($viewModel->getUrl('company/users/remove')) ?>"
+                              data-mage-init='<?= $escaper->escapeHtmlAttr(json_encode([
+                                  'MageOS_Company/js/confirm-submit' => [
+                                      'message' => __('Remove %1 from the company?', $user['name']),
+                                  ],
+                              ])) ?>'>
+                            <?= /* @noEscape */ $formKey ?>
+                            <input type="hidden" name="id" value="<?= (int)$user['customer_id'] ?>"/>
+                            <button type="submit" class="action delete">
+                                <span><?= $escaper->escapeHtml(__('Remove')) ?></span>
+                            </button>
+                        </form>
+                    <?php endif; ?>
+                </td>
+            </tr>
+        <?php endforeach; ?>
+        </tbody>
+    </table>
+</div>
+
+<?php if ($invitations): ?>
+    <div class="table-wrapper company-invitations">
+        <table class="data table">
+            <caption class="table-caption"><?= $escaper->escapeHtml(__('Pending Invitations')) ?></caption>
+            <thead>
+            <tr>
+                <th scope="col"><?= $escaper->escapeHtml(__('Email')) ?></th>
+                <th scope="col"><?= $escaper->escapeHtml(__('Role')) ?></th>
+                <th scope="col"><?= $escaper->escapeHtml(__('Sent')) ?></th>
+                <th scope="col"><?= $escaper->escapeHtml(__('Status')) ?></th>
+                <th scope="col" class="actions"><?= $escaper->escapeHtml(__('Actions')) ?></th>
+            </tr>
+            </thead>
+            <tbody>
+            <?php foreach ($invitations as $invitation): ?>
+                <tr>
+                    <td><?= $escaper->escapeHtml($invitation->getEmail()) ?></td>
+                    <td><?= $escaper->escapeHtml($viewModel->getRoleLabel($invitation->getRole())) ?></td>
+                    <td><?= $escaper->escapeHtml($block->formatDate((string)$invitation->getData('created_at'))) ?></td>
+                    <td><?= $escaper->escapeHtml($invitation->isExpired() ? __('Expired') : __('Pending')) ?></td>
+                    <td class="actions">
+                        <form method="post" class="company-inline-action"
+                              action="<?= $escaper->escapeUrl($viewModel->getUrl('company/users/invite')) ?>">
+                            <?= /* @noEscape */ $formKey ?>
+                            <input type="hidden"
+                                   name="email" value="<?= $escaper->escapeHtmlAttr($invitation->getEmail()) ?>"/>
+                            <input type="hidden"
+                                   name="role" value="<?= $escaper->escapeHtmlAttr($invitation->getRole()) ?>"/>
+                            <input type="hidden" name="job_title"
+                                   value="<?= $escaper->escapeHtmlAttr((string)$invitation->getJobTitle()) ?>"/>
+                            <button type="submit" class="action">
+                                <span><?= $escaper->escapeHtml(__('Resend')) ?></span>
+                            </button>
+                        </form>
+                        <form method="post" class="company-inline-action"
+                              action="<?= $escaper->escapeUrl($viewModel->getUrl('company/users/cancelInvitation')) ?>">
+                            <?= /* @noEscape */ $formKey ?>
+                            <input type="hidden" name="id" value="<?= (int)$invitation->getId() ?>"/>
+                            <button type="submit" class="action delete">
+                                <span><?= $escaper->escapeHtml(__('Cancel')) ?></span>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+<?php endif; ?>
+
+<form class="form company-invite" method="post" data-mage-init='{"validation":{}}'
+      action="<?= $escaper->escapeUrl($viewModel->getUrl('company/users/invite')) ?>">
+    <?= /* @noEscape */ $formKey ?>
+    <fieldset class="fieldset">
+        <legend class="legend"><span><?= $escaper->escapeHtml(__('Invite a User')) ?></span></legend>
+        <p class="note">
+            <?= $escaper->escapeHtml(
+                __('We will email an invitation link. The person joins the company when they accept it.')
+            ) ?>
+        </p>
+        <div class="field email required">
+            <label class="label" for="invite_email"><span><?= $escaper->escapeHtml(__('Email')) ?></span></label>
+            <div class="control">
+                <input type="email" name="email" id="invite_email" class="input-text"
+                       data-validate="{required:true, 'validate-email':true}"/>
+            </div>
+        </div>
+        <div class="field role required">
+            <label class="label" for="invite_role"><span><?= $escaper->escapeHtml(__('Role')) ?></span></label>
+            <div class="control">
+                <select name="role" id="invite_role" class="select">
+                    <?php foreach ($viewModel->getRoleOptions() as $value => $label): ?>
+                        <option value="<?= $escaper->
+                            escapeHtmlAttr($value) ?>"><?= $escaper->escapeHtml($label) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+        </div>
+        <div class="field job-title">
+            <label class="label" for="invite_job_title">
+                <span><?= $escaper->escapeHtml(__('Job Title')) ?></span>
+            </label>
+            <div class="control">
+                <input type="text" name="job_title" id="invite_job_title" class="input-text"/>
+            </div>
+        </div>
+    </fieldset>
+    <div class="actions-toolbar">
+        <div class="primary">
+            <button type="submit" class="action submit primary">
+                <span><?= $escaper->escapeHtml(__('Send Invitation')) ?></span>
+            </button>
+        </div>
+    </div>
+</form>

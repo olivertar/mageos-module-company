@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <update handle="customer_account"/>
+    <head>
+        <css src="MageOS_Company::css/company.css"/>
+    </head>
+    <body>
+        <referenceContainer name="content">
+            <block class="Magento\Framework\View\Element\Template" name="company.address.edit" template="MageOS_Company::address/edit.phtml"
+                   cacheable="false">
+                <arguments>
+                    <argument name="view_model" xsi:type="object">MageOS\Company\ViewModel\CompanyAccount</argument>
+                </arguments>
+                <block class="Magento\Framework\View\Element\Template" name="company.address.edit.field" as="field"
+                       template="MageOS_Company::register/field.phtml"/>
+                <block class="Magento\Framework\View\Element\Template" name="company.address.edit.country_region"
+                       as="country_region" template="MageOS_Company::form/country-region.phtml"/>
+            </block>
+        </referenceContainer>
+    </body>
+</page>

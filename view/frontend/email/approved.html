@@ -1,0 +1,25 @@
+<!--@subject {{trans "Your company account at %store_name has been approved" store_name=$store.frontend_name}} @-->
+<!--@vars {
+"var store.frontend_name":"Store Name",
+"var this.getUrl($store,'customer/account/login/',[_nosid:1])":"Login URL",
+"var customer_name":"Contact Name",
+"var company_name":"Company Name",
+"var comment":"Comment"
+} @-->
+
+{{template config_path="design/email/header_template"}}
+
+<p class="greeting">{{trans "%name," name=$customer_name}}</p>
+<p>{{trans "The company account for %company_name has been approved." company_name=$company_name}}</p>
+{{depend comment}}
+<p>{{var comment}}</p>
+{{/depend}}
+<p>
+    {{trans
+        'You can now <a href="%login_url">sign in</a> to your account.'
+
+        login_url=$this.getUrl($store,'customer/account/login/',[_nosid:1])
+    |raw}}
+</p>
+
+{{template config_path="design/email/footer_template"}}

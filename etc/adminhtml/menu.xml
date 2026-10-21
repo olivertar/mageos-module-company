@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
+    <menu>
+        <add id="MageOS_Company::company_manage" title="Companies" translate="title" module="MageOS_Company"
+             sortOrder="15" parent="Magento_Customer::customer" action="mageos_company/company/"
+             resource="MageOS_Company::company_view"/>
+        <add id="MageOS_Company::messages_manage" title="Company Messages" translate="title" module="MageOS_Company"
+             sortOrder="16" parent="Magento_Customer::customer" action="mageos_company/message/"
+             resource="MageOS_Company::messages"/>
+        <add id="MageOS_Company::company_attributes" title="Company" translate="title" module="MageOS_Company"
+             sortOrder="40" parent="Magento_Backend::stores_attributes" action="mageos_company/attribute/"
+             resource="MageOS_Company::attributes"/>
+    </menu>
+</config>

@@ -1,0 +1,351 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <argument name="data" xsi:type="array">
+        <item name="js_config" xsi:type="array">
+            <item name="provider" xsi:type="string">company_attribute_form.company_attribute_form_data_source</item>
+        </item>
+        <item name="label" xsi:type="string" translate="true">Attribute</item>
+        <item name="template" xsi:type="string">templates/form/collapsible</item>
+    </argument>
+    <settings>
+        <buttons>
+            <button name="back" class="MageOS\Company\Block\Adminhtml\Company\Edit\BackButton"/>
+            <button name="delete" class="MageOS\Company\Block\Adminhtml\Attribute\Edit\DeleteButton"/>
+            <button name="save_and_continue" class="MageOS\Company\Block\Adminhtml\Attribute\Edit\SaveAndContinueButton"/>
+            <button name="save" class="MageOS\Company\Block\Adminhtml\Attribute\Edit\SaveButton"/>
+        </buttons>
+        <namespace>company_attribute_form</namespace>
+        <dataScope>data</dataScope>
+        <deps>
+            <dep>company_attribute_form.company_attribute_form_data_source</dep>
+        </deps>
+    </settings>
+    <dataSource name="company_attribute_form_data_source">
+        <argument name="data" xsi:type="array">
+            <item name="js_config" xsi:type="array">
+                <item name="component" xsi:type="string">Magento_Ui/js/form/provider</item>
+            </item>
+        </argument>
+        <settings>
+            <submitUrl path="mageos_company/attribute/save"/>
+        </settings>
+        <aclResource>MageOS_Company::attributes</aclResource>
+        <dataProvider class="MageOS\Company\Ui\DataProvider\Attribute\FormDataProvider"
+                      name="company_attribute_form_data_source">
+            <settings>
+                <requestFieldName>id</requestFieldName>
+                <primaryFieldName>attribute_id</primaryFieldName>
+            </settings>
+        </dataProvider>
+    </dataSource>
+    <fieldset name="properties" sortOrder="10">
+        <settings>
+            <collapsible>true</collapsible>
+            <opened>true</opened>
+            <label translate="true">Attribute Properties</label>
+            <dataScope>attribute</dataScope>
+        </settings>
+        <field name="attribute_id" formElement="hidden">
+            <settings>
+                <dataType>text</dataType>
+            </settings>
+        </field>
+        <field name="entity_type_code" formElement="hidden">
+            <settings>
+                <dataType>text</dataType>
+            </settings>
+        </field>
+        <field name="options_submitted" formElement="hidden">
+            <settings>
+                <dataType>text</dataType>
+            </settings>
+        </field>
+        <field name="frontend_label" formElement="input" sortOrder="10">
+            <settings>
+                <dataType>text</dataType>
+                <label translate="true">Default Label</label>
+                <validation>
+                    <rule name="required-entry" xsi:type="boolean">true</rule>
+                    <rule name="max_text_length" xsi:type="number">255</rule>
+                </validation>
+            </settings>
+        </field>
+        <field name="attribute_code" formElement="input" sortOrder="20">
+            <settings>
+                <dataType>text</dataType>
+                <label translate="true">Attribute Code</label>
+                <notice translate="true">Lowercase letters, numbers and underscores, starting with a letter (up to 30 characters). It cannot be changed later.</notice>
+                <validation>
+                    <rule name="required-entry" xsi:type="boolean">true</rule>
+                    <rule name="validate-code" xsi:type="boolean">true</rule>
+                    <rule name="max_text_length" xsi:type="number">30</rule>
+                </validation>
+            </settings>
+        </field>
+        <field name="frontend_input" formElement="select" sortOrder="30">
+            <settings>
+                <dataType>text</dataType>
+                <label translate="true">Input Type</label>
+                <notice translate="true">It cannot be changed later.</notice>
+                <validation>
+                    <rule name="required-entry" xsi:type="boolean">true</rule>
+                </validation>
+            </settings>
+        </field>
+        <field name="default_value" formElement="input" sortOrder="40">
+            <settings>
+                <dataType>text</dataType>
+                <label translate="true">Default Value</label>
+            </settings>
+        </field>
+        <field name="sort_order" formElement="input" sortOrder="50">
+            <settings>
+                <dataType>text</dataType>
+                <label translate="true">Sort Order</label>
+                <notice translate="true">Position of the field in the forms.</notice>
+                <validation>
+                    <rule name="validate-digits" xsi:type="boolean">true</rule>
+                </validation>
+            </settings>
+        </field>
+    </fieldset>
+    <fieldset name="storefront" sortOrder="20">
+        <settings>
+            <collapsible>true</collapsible>
+            <opened>true</opened>
+            <label translate="true">Forms</label>
+            <dataScope>attribute</dataScope>
+        </settings>
+        <field name="is_required" formElement="checkbox" sortOrder="10">
+            <settings>
+                <dataType>boolean</dataType>
+                <label translate="true">Values Required</label>
+            </settings>
+            <formElements>
+                <checkbox>
+                    <settings>
+                        <prefer>toggle</prefer>
+                        <valueMap>
+                            <map name="false" xsi:type="string">0</map>
+                            <map name="true" xsi:type="string">1</map>
+                        </valueMap>
+                    </settings>
+                </checkbox>
+            </formElements>
+        </field>
+        <field name="is_visible" formElement="checkbox" sortOrder="20">
+            <settings>
+                <dataType>boolean</dataType>
+                <label translate="true">Enabled</label>
+                <notice translate="true">A disabled attribute is hidden from every form and API, and its values are kept.</notice>
+            </settings>
+            <formElements>
+                <checkbox>
+                    <settings>
+                        <prefer>toggle</prefer>
+                        <valueMap>
+                            <map name="false" xsi:type="string">0</map>
+                            <map name="true" xsi:type="string">1</map>
+                        </valueMap>
+                    </settings>
+                </checkbox>
+            </formElements>
+        </field>
+        <field name="used_in_forms" formElement="multiselect" sortOrder="30">
+            <settings>
+                <dataType>text</dataType>
+                <label translate="true">Use in Forms</label>
+            </settings>
+        </field>
+    </fieldset>
+    <fieldset name="validation" sortOrder="30">
+        <settings>
+            <collapsible>true</collapsible>
+            <opened>false</opened>
+            <label translate="true">Validation</label>
+            <dataScope>attribute</dataScope>
+        </settings>
+        <field name="input_validation" formElement="select" sortOrder="10">
+            <settings>
+                <dataType>text</dataType>
+                <label translate="true">Input Validation</label>
+            </settings>
+        </field>
+        <field name="min_text_length" formElement="input" sortOrder="20">
+            <settings>
+                <dataType>text</dataType>
+                <label translate="true">Minimum Text Length</label>
+                <validation>
+                    <rule name="validate-digits" xsi:type="boolean">true</rule>
+                </validation>
+            </settings>
+        </field>
+        <field name="max_text_length" formElement="input" sortOrder="30">
+            <settings>
+                <dataType>text</dataType>
+                <label translate="true">Maximum Text Length</label>
+                <validation>
+                    <rule name="validate-digits" xsi:type="boolean">true</rule>
+                </validation>
+            </settings>
+        </field>
+    </fieldset>
+    <fieldset name="options" sortOrder="40">
+        <settings>
+            <collapsible>true</collapsible>
+            <opened>true</opened>
+            <label translate="true">Options</label>
+            <dataScope>attribute</dataScope>
+        </settings>
+        <dynamicRows name="options" sortOrder="10">
+            <settings>
+                <addButtonLabel translate="true">Add Option</addButtonLabel>
+                <additionalClasses>
+                    <class name="admin__field-wide">true</class>
+                </additionalClasses>
+                <componentType>dynamicRows</componentType>
+                <dndConfig>
+                    <param name="enabled" xsi:type="boolean">true</param>
+                </dndConfig>
+            </settings>
+            <container name="record" component="Magento_Ui/js/dynamic-rows/record">
+                <argument name="data" xsi:type="array">
+                    <item name="config" xsi:type="array">
+                        <item name="isTemplate" xsi:type="boolean">true</item>
+                        <item name="is_collection" xsi:type="boolean">true</item>
+                        <item name="componentType" xsi:type="string">container</item>
+                        <item name="positionProvider" xsi:type="string">position</item>
+                    </item>
+                </argument>
+                <field name="option_id" formElement="hidden">
+                    <settings>
+                        <dataType>text</dataType>
+                    </settings>
+                </field>
+                <field name="label" formElement="input" sortOrder="10">
+                    <settings>
+                        <dataType>text</dataType>
+                        <label translate="true">Label</label>
+                        <validation>
+                            <rule name="required-entry" xsi:type="boolean">true</rule>
+                        </validation>
+                    </settings>
+                </field>
+                <field name="is_default" formElement="checkbox" sortOrder="20">
+                    <settings>
+                        <dataType>boolean</dataType>
+                        <label translate="true">Default</label>
+                    </settings>
+                    <formElements>
+                        <checkbox>
+                            <settings>
+                                <valueMap>
+                                    <map name="false" xsi:type="string">0</map>
+                                    <map name="true" xsi:type="string">1</map>
+                                </valueMap>
+                            </settings>
+                        </checkbox>
+                    </formElements>
+                </field>
+                <field name="position" formElement="hidden">
+                    <settings>
+                        <dataType>text</dataType>
+                    </settings>
+                </field>
+                <actionDelete name="action_delete" sortOrder="30">
+                    <settings>
+                        <dataType>text</dataType>
+                        <label translate="true">Actions</label>
+                    </settings>
+                </actionDelete>
+            </container>
+        </dynamicRows>
+    </fieldset>
+    <fieldset name="grid" sortOrder="50">
+        <settings>
+            <collapsible>true</collapsible>
+            <opened>false</opened>
+            <label translate="true">Company Grid</label>
+            <dataScope>attribute</dataScope>
+        </settings>
+        <field name="is_used_in_grid" formElement="checkbox" sortOrder="10">
+            <settings>
+                <dataType>boolean</dataType>
+                <label translate="true">Add to Column Options</label>
+                <notice translate="true">Changing the grid settings requires a reindex of the "Company Grid" index.</notice>
+            </settings>
+            <formElements>
+                <checkbox>
+                    <settings>
+                        <prefer>toggle</prefer>
+                        <valueMap>
+                            <map name="false" xsi:type="string">0</map>
+                            <map name="true" xsi:type="string">1</map>
+                        </valueMap>
+                    </settings>
+                </checkbox>
+            </formElements>
+        </field>
+        <field name="is_visible_in_grid" formElement="checkbox" sortOrder="20">
+            <settings>
+                <dataType>boolean</dataType>
+                <label translate="true">Visible by Default</label>
+            </settings>
+            <formElements>
+                <checkbox>
+                    <settings>
+                        <prefer>toggle</prefer>
+                        <valueMap>
+                            <map name="false" xsi:type="string">0</map>
+                            <map name="true" xsi:type="string">1</map>
+                        </valueMap>
+                    </settings>
+                </checkbox>
+            </formElements>
+        </field>
+        <field name="is_filterable_in_grid" formElement="checkbox" sortOrder="30">
+            <settings>
+                <dataType>boolean</dataType>
+                <label translate="true">Use in Filter Options</label>
+            </settings>
+            <formElements>
+                <checkbox>
+                    <settings>
+                        <prefer>toggle</prefer>
+                        <valueMap>
+                            <map name="false" xsi:type="string">0</map>
+                            <map name="true" xsi:type="string">1</map>
+                        </valueMap>
+                    </settings>
+                </checkbox>
+            </formElements>
+        </field>
+        <field name="is_searchable_in_grid" formElement="checkbox" sortOrder="40">
+            <settings>
+                <dataType>boolean</dataType>
+                <label translate="true">Use in Keyword Search</label>
+                <notice translate="true">Text fields only.</notice>
+            </settings>
+            <formElements>
+                <checkbox>
+                    <settings>
+                        <prefer>toggle</prefer>
+                        <valueMap>
+                            <map name="false" xsi:type="string">0</map>
+                            <map name="true" xsi:type="string">1</map>
+                        </valueMap>
+                    </settings>
+                </checkbox>
+            </formElements>
+        </field>
+    </fieldset>
+    <fieldset name="labels" sortOrder="60">
+        <settings>
+            <collapsible>true</collapsible>
+            <opened>false</opened>
+            <label translate="true">Labels per Store View</label>
+            <dataScope>attribute</dataScope>
+        </settings>
+    </fieldset>
+</form>

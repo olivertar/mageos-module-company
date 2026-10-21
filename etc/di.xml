@@ -1,0 +1,142 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <preference for="MageOS\Company\Api\Data\CompanyInterface" type="MageOS\Company\Model\Company"/>
+    <preference for="MageOS\Company\Api\Data\CompanyAddressInterface" type="MageOS\Company\Model\CompanyAddress"/>
+    <preference for="MageOS\Company\Api\Data\CompanyCustomerInterface" type="MageOS\Company\Model\CompanyCustomer"/>
+    <preference for="MageOS\Company\Api\Data\CompanySearchResultsInterface"
+                type="MageOS\Company\Model\CompanySearchResults"/>
+    <preference for="MageOS\Company\Api\Data\CompanyAddressSearchResultsInterface"
+                type="MageOS\Company\Model\CompanyAddressSearchResults"/>
+    <preference for="MageOS\Company\Api\CompanyRepositoryInterface" type="MageOS\Company\Model\CompanyRepository"/>
+    <preference for="MageOS\Company\Api\CompanyAddressRepositoryInterface"
+                type="MageOS\Company\Model\CompanyAddressRepository"/>
+    <preference for="MageOS\Company\Api\CompanyManagementInterface" type="MageOS\Company\Model\CompanyManagement"/>
+    <preference for="MageOS\Company\Api\CompanyApprovalInterface" type="MageOS\Company\Model\CompanyApproval"/>
+    <preference for="MageOS\Company\Api\Data\StatusHistoryInterface" type="MageOS\Company\Model\StatusHistory"/>
+    <preference for="MageOS\Company\Api\CompanyAddressManagementInterface"
+                type="MageOS\Company\Model\CompanyAddressManagement"/>
+    <preference for="MageOS\Company\Api\MyCompanyManagementInterface"
+                type="MageOS\Company\Model\MyCompanyManagement"/>
+    <preference for="MageOS\Company\Api\CompanyRegistrationInterface"
+                type="MageOS\Company\Model\Registration\CompanyRegistration"/>
+    <preference for="MageOS\Company\Api\CompanyAuthorizationInterface"
+                type="MageOS\Company\Model\Authorization\RoleBasedAuthorization"/>
+    <preference for="MageOS\Company\Api\Data\MessageInterface" type="MageOS\Company\Model\Message"/>
+    <preference for="MageOS\Company\Api\Data\MessageSearchResultsInterface"
+                type="MageOS\Company\Model\MessageSearchResults"/>
+    <preference for="MageOS\Company\Api\MessageRepositoryInterface" type="MageOS\Company\Model\MessageRepository"/>
+    <preference for="MageOS\Company\Api\MessageManagementInterface" type="MageOS\Company\Model\MessageManagement"/>
+
+    <virtualType name="MageOSCompanyFrontendUrlFactory" type="Magento\Framework\UrlFactory">
+        <arguments>
+            <argument name="instanceName" xsi:type="string">Magento\Framework\Url</argument>
+        </arguments>
+    </virtualType>
+    <type name="MageOS\Company\Model\Registration\StatusLink">
+        <arguments>
+            <argument name="urlFactory" xsi:type="object">MageOSCompanyFrontendUrlFactory</argument>
+        </arguments>
+    </type>
+
+    <type name="MageOS\Company\Model\ResourceModel\Company\Grid\Collection">
+        <arguments>
+            <argument name="mainTable" xsi:type="string">company_grid_flat</argument>
+            <argument name="resourceModel" xsi:type="string">MageOS\Company\Model\ResourceModel\Company</argument>
+            <argument name="identifierName" xsi:type="string">entity_id</argument>
+        </arguments>
+    </type>
+    <virtualType name="MageOSCompanyGridMviewAction" type="Magento\Framework\Mview\View\BaseAction">
+        <arguments>
+            <argument name="indexerId" xsi:type="const">MageOS\Company\Model\Indexer\GridIndexer::INDEXER_ID</argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="MageOSCompanyEavSnapshot" type="Magento\Framework\Model\ResourceModel\Db\VersionControl\Snapshot">
+        <arguments>
+            <argument name="metadata" xsi:type="object">Magento\Eav\Model\Entity\VersionControl\Metadata</argument>
+        </arguments>
+    </virtualType>
+    <type name="MageOS\Company\Model\ResourceModel\Company">
+        <arguments>
+            <argument name="entitySnapshot" xsi:type="object">MageOSCompanyEavSnapshot</argument>
+        </arguments>
+    </type>
+    <type name="MageOS\Company\Model\ResourceModel\Company\Collection">
+        <arguments>
+            <argument name="entitySnapshot" xsi:type="object">MageOSCompanyEavSnapshot</argument>
+        </arguments>
+    </type>
+    <type name="MageOS\Company\Model\ResourceModel\CompanyAddress">
+        <arguments>
+            <argument name="entitySnapshot" xsi:type="object">MageOSCompanyEavSnapshot</argument>
+        </arguments>
+    </type>
+    <type name="MageOS\Company\Model\ResourceModel\CompanyAddress\Collection">
+        <arguments>
+            <argument name="entitySnapshot" xsi:type="object">MageOSCompanyEavSnapshot</argument>
+        </arguments>
+    </type>
+
+    <type name="MageOS\Company\Model\CompanyRepository">
+        <arguments>
+            <argument name="collectionProcessor" xsi:type="object">Magento\Eav\Model\Api\SearchCriteria\CollectionProcessor</argument>
+        </arguments>
+    </type>
+    <type name="MageOS\Company\Model\CompanyAddressRepository">
+        <arguments>
+            <argument name="collectionProcessor" xsi:type="object">Magento\Eav\Model\Api\SearchCriteria\CollectionProcessor</argument>
+        </arguments>
+    </type>
+    <type name="MageOS\Company\Model\CompanyCustomer\AssignmentValidator">
+        <arguments>
+            <argument name="customerRepository" xsi:type="object">Magento\Customer\Api\CustomerRepositoryInterface\Proxy</argument>
+        </arguments>
+    </type>
+
+    <type name="MageOS\Company\Model\CompanyManagement">
+        <arguments>
+            <argument name="registrar" xsi:type="object">MageOS\Company\Model\Registration\Registrar\Proxy</argument>
+        </arguments>
+    </type>
+    <type name="MageOS\Company\Model\Registration\Registrar">
+        <arguments>
+            <argument name="accountManagement" xsi:type="object">Magento\Customer\Api\AccountManagementInterface\Proxy</argument>
+        </arguments>
+    </type>
+    <type name="MageOS\Company\Model\MessageRepository">
+        <arguments>
+            <argument name="collectionProcessor" xsi:type="object">Magento\Framework\Api\SearchCriteria\CollectionProcessor</argument>
+        </arguments>
+    </type>
+    <type name="MageOS\Company\Model\Status\SessionTerminator">
+        <arguments>
+            <argument name="customerTokenService" xsi:type="object">Magento\Integration\Api\CustomerTokenServiceInterface\Proxy</argument>
+        </arguments>
+    </type>
+
+    <type name="Magento\Customer\Api\AccountManagementInterface">
+        <plugin name="mageos_company_login_company_status"
+                type="MageOS\Company\Plugin\Customer\AccountManagementPlugin"/>
+    </type>
+    <type name="Magento\ReCaptchaWebapiApi\Model\CompositeWebapiValidationConfigProvider">
+        <arguments>
+            <argument name="providers" xsi:type="array">
+                <item name="mageos_company_register" xsi:type="object">MageOS\Company\Model\Registration\WebapiCaptchaConfigProvider</item>
+            </argument>
+        </arguments>
+    </type>
+    <type name="Magento\Customer\Model\EmailNotificationInterface">
+        <plugin name="mageos_company_defer_welcome_email"
+                type="MageOS\Company\Plugin\Customer\EmailNotificationPlugin"/>
+    </type>
+    <type name="MageOS\Company\Model\Registration\WelcomeEmailDeferral">
+        <arguments>
+            <argument name="emailNotification" xsi:type="object">Magento\Customer\Model\EmailNotificationInterface\Proxy</argument>
+        </arguments>
+    </type>
+    <type name="Magento\Customer\Api\CustomerRepositoryInterface">
+        <plugin name="mageos_company_customer_company_attributes"
+                type="MageOS\Company\Plugin\Customer\CustomerRepositoryPlugin"/>
+    </type>
+</config>

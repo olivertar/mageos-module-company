@@ -1,0 +1,62 @@
+<?php
+/**
+ * Country and region fields of a company address form, wired to the regionUpdater widget.
+ *
+ * Block data: scope, form_selector, country_id, region_id, region, fields (AttributeFields view model).
+ *
+ * @var \Magento\Framework\View\Element\Template $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+
+/** @var \MageOS\Company\ViewModel\AttributeFields $fields */
+$fields = $block->getData('fields');
+$scope = (string)$block->getData('scope');
+$countryId = (string)($block->getData('country_id') ?: $fields->getDefaultCountry());
+$config = $fields->getRegionUpdaterConfig(
+    $scope,
+    (string)$block->getData('form_selector'),
+    $block->getData('region_id')
+);
+?>
+<div class="field country required">
+    <label class="label" for="<?= $escaper->escapeHtmlAttr($scope) ?>_country_id">
+        <span><?= $escaper->escapeHtml(__('Country')) ?></span>
+    </label>
+    <div class="control">
+        <select name="<?= $escaper->escapeHtmlAttr($scope) ?>[country_id]"
+                id="<?= $escaper->escapeHtmlAttr($scope) ?>_country_id" class="select required-entry">
+            <?php foreach ($fields->getCountryOptions() as $option): ?>
+                <option value="<?= $escaper->escapeHtmlAttr($option['value']) ?>"
+                    <?= $option['value'] === $countryId ? 'selected="selected"' : '' ?>>
+                    <?= $escaper->escapeHtml($option['label']) ?>
+                </option>
+            <?php endforeach; ?>
+        </select>
+    </div>
+</div>
+<div class="field region required">
+    <label class="label" for="<?= $escaper->escapeHtmlAttr($scope) ?>_region_id">
+        <span><?= $escaper->escapeHtml(__('State/Province')) ?></span>
+    </label>
+    <div class="control">
+        <select id="<?= $escaper->escapeHtmlAttr($scope) ?>_region_id"
+                name="<?= $escaper->escapeHtmlAttr($scope) ?>[region_id]" class="validate-select region_id"
+                title="<?= $escaper->escapeHtmlAttr(__('State/Province')) ?>" style="display:none;">
+            <option value="">
+                <?= $escaper->escapeHtml(__('Please select a region, state or province.')) ?>
+            </option>
+        </select>
+        <input type="text" id="<?= $escaper->escapeHtmlAttr($scope) ?>_region"
+               name="<?= $escaper->escapeHtmlAttr($scope) ?>[region]"
+               value="<?= $escaper->escapeHtmlAttr((string)$block->getData('region')) ?>"
+               title="<?= $escaper->escapeHtmlAttr(__('State/Province')) ?>"
+               class="input-text" style="display:none;"/>
+    </div>
+</div>
+<script type="text/x-magento-init">
+    {
+        "#<?= $escaper->escapeJs($scope) ?>_country_id": {
+            "regionUpdater": <?= /* @noEscape */ json_encode($config) ?>
+        }
+    }
+</script>

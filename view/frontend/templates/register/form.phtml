@@ -1,0 +1,121 @@
+<?php
+/**
+ * Company registration form.
+ *
+ * @var \Magento\Framework\View\Element\Template $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+
+/** @var \MageOS\Company\ViewModel\Registration $viewModel */
+$viewModel = $block->getData('view_model');
+/** @var \Magento\Framework\View\Element\Template $fieldRenderer */
+$fieldRenderer = $block->getChildBlock('field');
+?>
+<form class="form company-register"
+      action="<?= $escaper->escapeUrl($viewModel->getPostUrl()) ?>"
+      method="post"
+      id="company-register-form"
+      autocomplete="off"
+      data-mage-init='{"validation":{}}'>
+    <?= $block->getBlockHtml('formkey') ?>
+    <fieldset class="fieldset company-info">
+        <legend class="legend"><span><?= $escaper->escapeHtml(__('Company Information')) ?></span></legend>
+        <?php foreach ($viewModel->getCompanyFields() as $field): ?>
+            <?= /* @noEscape */ $fieldRenderer->setData('field', $field)->toHtml() ?>
+        <?php endforeach; ?>
+    </fieldset>
+
+    <fieldset class="fieldset company-address">
+        <legend class="legend"><span><?= $escaper->escapeHtml(__('Legal Address')) ?></span></legend>
+        <?php foreach ($viewModel->getAddressFields() as $field): ?>
+            <?= /* @noEscape */ $fieldRenderer->setData('field', $field)->toHtml() ?>
+            <?php if ($field['code'] === 'city'): ?>
+                <?= /* @noEscape */ $block->getChildBlock('country_region')->addData([
+                    'fields' => $viewModel->getAttributeFields(),
+                    'scope' => 'address',
+                    'form_selector' => '#company-register-form',
+                    'country_id' => $viewModel->getValue('address', 'country_id'),
+                    'region_id' => $viewModel->getValue('address', 'region_id'),
+                    'region' => $viewModel->getValue('address', 'region'),
+                ])->toHtml() ?>
+            <?php endif; ?>
+        <?php endforeach; ?>
+    </fieldset>
+
+    <?php if (!$viewModel->isLoggedIn()): ?>
+        <fieldset class="fieldset create account">
+            <legend class="legend"><span><?= $escaper->escapeHtml(__('Your Account')) ?></span></legend>
+            <p class="note">
+                <?= $escaper->escapeHtml(__('Already have an account?')) ?>
+                <a href="<?= $escaper->escapeUrl($viewModel->getLoginUrl()) ?>">
+                    <?= $escaper->escapeHtml(__('Sign in to apply with it.')) ?>
+                </a>
+            </p>
+            <?php foreach (['firstname' => __('First Name'), 'lastname' => __('Last Name')] as $code => $label): ?>
+                <div class="field <?= $escaper->escapeHtmlAttr($code) ?> required">
+                    <label class="label" for="<?= $escaper->escapeHtmlAttr($code) ?>">
+                        <span><?= $escaper->escapeHtml($label) ?></span>
+                    </label>
+                    <div class="control">
+                        <input type="text" name="<?= $escaper->escapeHtmlAttr($code) ?>"
+                               id="<?= $escaper->escapeHtmlAttr($code) ?>"
+                               value="<?= $escaper->escapeHtmlAttr((string)$viewModel->getValue(null, $code)) ?>"
+                               class="input-text required-entry"/>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+            <div class="field required">
+                <label class="label" for="email_address"><span><?= $escaper->escapeHtml(__('Email')) ?></span></label>
+                <div class="control">
+                    <input type="email" name="email" id="email_address" autocomplete="email"
+                           value="<?= $escaper->escapeHtmlAttr((string)$viewModel->getValue(null, 'email')) ?>"
+                           class="input-text" data-mage-init='{"mage/trim-input":{}}'
+                           data-validate="{required:true, 'validate-email':true}"/>
+                </div>
+            </div>
+            <div class="field password required">
+                <label class="label" for="password"><span><?= $escaper->escapeHtml(__('Password')) ?></span></label>
+                <div class="control">
+                    <input type="password" name="password" id="password" autocomplete="new-password"
+                           class="input-text"
+                           data-password-min-length="<?= (int)$viewModel->getMinimumPasswordLength() ?>"
+                           data-password-min-character-sets="<?=
+                                (int)$viewModel->getRequiredCharacterClassesNumber() ?>"
+                           data-validate="{required:true, 'validate-customer-password':true}"/>
+                </div>
+            </div>
+            <div class="field confirmation required">
+                <label class="label" for="password-confirmation">
+                    <span><?= $escaper->escapeHtml(__('Confirm Password')) ?></span>
+                </label>
+                <div class="control">
+                    <input type="password" name="password_confirmation" id="password-confirmation"
+                           autocomplete="new-password" class="input-text"
+                           data-validate="{required:true, equalTo:'#password'}"/>
+                </div>
+            </div>
+        </fieldset>
+    <?php endif; ?>
+
+    <?php if ($viewModel->isTermsEnabled()): ?>
+        <fieldset class="fieldset terms">
+            <div class="field choice required">
+                <input type="checkbox" name="terms" id="company_terms" value="1" class="checkbox required-entry"/>
+                <label class="label" for="company_terms">
+                    <span><?= $escaper->escapeHtml($viewModel->getTermsText(), ['a', 'strong', 'em', 'br']) ?></span>
+                </label>
+            </div>
+        </fieldset>
+    <?php endif; ?>
+
+    <?= $block->getChildHtml('form_additional_info') ?>
+
+    <div class="actions-toolbar">
+        <div class="primary">
+            <button type="submit" class="action submit primary"
+                    title="<?= $escaper->escapeHtmlAttr(__('Submit Application')) ?>">
+                <span><?= $escaper->escapeHtml(__('Submit Application')) ?></span>
+            </button>
+        </div>
+    </div>
+</form>

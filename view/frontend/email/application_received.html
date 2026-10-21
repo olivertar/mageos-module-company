@@ -1,0 +1,24 @@
+<!--@subject {{trans "We received your company application at %store_name" store_name=$store.frontend_name}} @-->
+<!--@vars {
+"var store.frontend_name":"Store Name",
+"var customer_name":"Applicant Name",
+"var company_name":"Company Name",
+"var status_url":"Application Status URL"
+} @-->
+
+{{template config_path="design/email/header_template"}}
+
+<p class="greeting">{{trans "%name," name=$customer_name}}</p>
+<p>{{trans "Thank you for applying for a company account for %company_name at %store_name." company_name=$company_name store_name=$store.frontend_name}}</p>
+<p>{{trans "We will review your application and let you know by email. You will be able to sign in once it is approved."}}</p>
+{{depend status_url}}
+<p>
+    {{trans
+        'Meanwhile, you can <a href="%status_url">check your application and send us a message</a>. This link is personal: do not share it.'
+
+        status_url=$status_url
+    |raw}}
+</p>
+{{/depend}}
+
+{{template config_path="design/email/footer_template"}}

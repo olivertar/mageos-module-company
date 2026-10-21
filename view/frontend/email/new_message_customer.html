@@ -1,0 +1,36 @@
+<!--@subject {{trans "New message from %store_name" store_name=$store.frontend_name}} @-->
+<!--@vars {
+"var store.frontend_name":"Store Name",
+"var this.getUrl($store,'company/message/',[_nosid:1])":"Messages URL",
+"var customer_name":"Recipient Name",
+"var company_name":"Company Name",
+"var status_url":"Application Status URL",
+"var body":"Message",
+"var can_view_thread":"Whether the thread is available in the account"
+} @-->
+
+{{template config_path="design/email/header_template"}}
+
+<p class="greeting">{{trans "%name," name=$customer_name}}</p>
+<p>{{trans "You have a new message for %company_name:" company_name=$company_name}}</p>
+<blockquote style="white-space: pre-line;">{{var body}}</blockquote>
+{{depend can_view_thread}}
+<p>
+    {{trans
+        '<a href="%messages_url">Read and reply</a> in your account.'
+
+        messages_url=$this.getUrl($store,'company/message/',[_nosid:1])
+    |raw}}
+</p>
+{{/depend}}
+{{depend status_url}}
+<p>
+    {{trans
+        '<a href="%status_url">Read and reply</a> on your application page. This link is personal: do not share it.'
+
+        status_url=$status_url
+    |raw}}
+</p>
+{{/depend}}
+
+{{template config_path="design/email/footer_template"}}

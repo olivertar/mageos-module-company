@@ -1,0 +1,36 @@
+{
+    "name": "mageos/module-company",
+    "description": "Company entity (EAV) for Mage-OS: companies, company addresses and company users.",
+    "type": "magento2-module",
+    "require": {
+        "php": "~8.1.0||~8.2.0||~8.3.0||~8.4.0||~8.5.0",
+        "mage-os/framework": "*",
+        "mage-os/framework-message-queue": "*",
+        "mage-os/module-admin-notification": "*",
+        "mage-os/module-message-queue": "*",
+        "mage-os/module-authorization": "*",
+        "mage-os/module-backend": "*",
+        "mage-os/module-config": "*",
+        "mage-os/module-customer": "*",
+        "mage-os/module-directory": "*",
+        "mage-os/module-eav": "*",
+        "mage-os/module-email": "*",
+        "mage-os/module-integration": "*",
+        "mage-os/module-re-captcha-admin-ui": "*",
+        "mage-os/module-re-captcha-frontend-ui": "*",
+        "mage-os/module-re-captcha-ui": "*",
+        "mage-os/module-re-captcha-validation-api": "*",
+        "mage-os/module-re-captcha-webapi-api": "*",
+        "mage-os/module-store": "*",
+        "mage-os/module-ui": "*",
+        "mage-os/module-user": "*"
+    },
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "MageOS\\Company\\": ""
+        }
+    }
+}

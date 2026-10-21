@@ -1,0 +1,75 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <virtualType name="MageOSCompanyAddressCancelButton" type="MageOS\Company\Block\Adminhtml\Modal\CancelButton">
+        <arguments>
+            <argument name="modalName" xsi:type="string">company_form.company_form.addresses.addresses_modal</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="MageOSCompanyAddressDeleteButton" type="MageOS\Company\Block\Adminhtml\Modal\DeleteButton">
+        <arguments>
+            <argument name="formName" xsi:type="string">company_address_form.company_address_form</argument>
+            <argument name="route" xsi:type="string">mageos_company/address/delete</argument>
+            <argument name="idParam" xsi:type="string">entity_id</argument>
+            <argument name="label" xsi:type="string">Delete</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="MageOSCompanyUserCancelButton" type="MageOS\Company\Block\Adminhtml\Modal\CancelButton">
+        <arguments>
+            <argument name="modalName" xsi:type="string">company_form.company_form.users.users_modal</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="MageOSCompanyUserDeleteButton" type="MageOS\Company\Block\Adminhtml\Modal\DeleteButton">
+        <arguments>
+            <argument name="formName" xsi:type="string">company_user_form.company_user_form</argument>
+            <argument name="route" xsi:type="string">mageos_company/user/remove</argument>
+            <argument name="idParam" xsi:type="string">customer_id</argument>
+            <argument name="label" xsi:type="string">Remove from Company</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="MageOSCompanyApproveButton" type="MageOS\Company\Block\Adminhtml\Company\Edit\StatusButton">
+        <arguments>
+            <argument name="action" xsi:type="string">approve</argument>
+            <argument name="label" xsi:type="string">Approve</argument>
+            <argument name="promptTitle" xsi:type="string">Approve Company</argument>
+            <argument name="sortOrder" xsi:type="number">25</argument>
+            <argument name="cssClass" xsi:type="string">primary</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="MageOSCompanyRejectButton" type="MageOS\Company\Block\Adminhtml\Company\Edit\StatusButton">
+        <arguments>
+            <argument name="action" xsi:type="string">reject</argument>
+            <argument name="label" xsi:type="string">Reject</argument>
+            <argument name="promptTitle" xsi:type="string">Reject Company</argument>
+            <argument name="sortOrder" xsi:type="number">26</argument>
+            <argument name="cssClass" xsi:type="string"></argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="MageOSCompanyBlockButton" type="MageOS\Company\Block\Adminhtml\Company\Edit\StatusButton">
+        <arguments>
+            <argument name="action" xsi:type="string">block</argument>
+            <argument name="label" xsi:type="string">Block</argument>
+            <argument name="promptTitle" xsi:type="string">Block Company</argument>
+            <argument name="sortOrder" xsi:type="number">27</argument>
+            <argument name="cssClass" xsi:type="string"></argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="MageOSCompanyUnblockButton" type="MageOS\Company\Block\Adminhtml\Company\Edit\StatusButton">
+        <arguments>
+            <argument name="action" xsi:type="string">unblock</argument>
+            <argument name="label" xsi:type="string">Unblock</argument>
+            <argument name="promptTitle" xsi:type="string">Unblock Company</argument>
+            <argument name="sortOrder" xsi:type="number">28</argument>
+            <argument name="cssClass" xsi:type="string">primary</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="MageOSCompanyResubmitButton" type="MageOS\Company\Block\Adminhtml\Company\Edit\StatusButton">
+        <arguments>
+            <argument name="action" xsi:type="string">resubmit</argument>
+            <argument name="label" xsi:type="string">Reopen Application</argument>
+            <argument name="promptTitle" xsi:type="string">Reopen Application</argument>
+            <argument name="sortOrder" xsi:type="number">29</argument>
+            <argument name="cssClass" xsi:type="string"></argument>
+        </arguments>
+    </virtualType>
+</config>

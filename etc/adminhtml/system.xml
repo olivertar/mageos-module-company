@@ -1,0 +1,155 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <section id="company" translate="label" type="text" sortOrder="135" showInDefault="1" showInWebsite="1">
+            <label>Companies</label>
+            <tab>customer</tab>
+            <resource>MageOS_Company::config</resource>
+            <group id="general" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1">
+                <label>General</label>
+                <field id="active" translate="label comment" type="select" sortOrder="10" showInDefault="1"
+                       showInWebsite="1" canRestore="1">
+                    <label>Enable Companies on Storefront</label>
+                    <comment>Account area, registration form and customer APIs.</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="auto_approve" translate="label comment" type="select" sortOrder="20" showInDefault="1"
+                       showInWebsite="1" canRestore="1">
+                    <label>Approve New Companies Automatically</label>
+                    <comment>When disabled, new applications stay pending until an admin approves them.</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="vat_validation" translate="label" type="select" sortOrder="30" showInDefault="1"
+                       showInWebsite="1" canRestore="1">
+                    <label>VAT Number Validation</label>
+                    <source_model>MageOS\Company\Model\Config\Source\VatValidation</source_model>
+                </field>
+            </group>
+            <group id="registration" translate="label" type="text" sortOrder="20" showInDefault="1"
+                   showInWebsite="1">
+                <label>Registration</label>
+                <field id="enabled" translate="label" type="select" sortOrder="10" showInDefault="1"
+                       showInWebsite="1" canRestore="1">
+                    <label>Enable Public Registration Form</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="terms_enabled" translate="label" type="select" sortOrder="20" showInDefault="1"
+                       showInWebsite="1" canRestore="1">
+                    <label>Require Terms Acceptance</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+                <field id="terms_text" translate="label comment" type="textarea" sortOrder="30"
+                       showInDefault="1" showInWebsite="1">
+                    <label>Terms Text</label>
+                    <comment>Shown next to the terms checkbox. HTML links are allowed.</comment>
+                    <depends>
+                        <field id="enabled">1</field>
+                        <field id="terms_enabled">1</field>
+                    </depends>
+                </field>
+                <field id="status_link_lifetime" translate="label comment" type="text" sortOrder="40" showInDefault="1"
+                       showInWebsite="1" canRestore="1">
+                    <label>Application Status Link Lifetime (Days)</label>
+                    <comment>Emails to applicants of pending or rejected companies include a personal link to check the application status, read messages and reply. How long each link stays valid; 0 disables the links.</comment>
+                    <validate>required-entry validate-digits</validate>
+                </field>
+            </group>
+            <group id="email" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1">
+                <label>Email Notifications</label>
+                <field id="identity" translate="label" type="select" sortOrder="10" showInDefault="1"
+                       showInWebsite="1" canRestore="1">
+                    <label>Email Sender</label>
+                    <source_model>Magento\Config\Model\Config\Source\Email\Identity</source_model>
+                </field>
+                <field id="admin_recipients" translate="label comment" type="text" sortOrder="20"
+                       showInDefault="1" showInWebsite="1">
+                    <label>Admin Recipients</label>
+                    <comment>Comma-separated emails notified of new applications and messages.</comment>
+                    <validate>validate-emails</validate>
+                </field>
+                <field id="application_received_template" translate="label" type="select" sortOrder="30" showInDefault="1"
+                       showInWebsite="1" canRestore="1">
+                    <label>Application Received Template</label>
+                    <source_model>Magento\Config\Model\Config\Source\Email\Template</source_model>
+                </field>
+                <field id="admin_new_application_template" translate="label" type="select" sortOrder="40" showInDefault="1"
+                       showInWebsite="1" canRestore="1">
+                    <label>New Application (Admin) Template</label>
+                    <source_model>Magento\Config\Model\Config\Source\Email\Template</source_model>
+                </field>
+                <field id="approved_template" translate="label" type="select" sortOrder="50" showInDefault="1"
+                       showInWebsite="1" canRestore="1">
+                    <label>Company Approved Template</label>
+                    <source_model>Magento\Config\Model\Config\Source\Email\Template</source_model>
+                </field>
+                <field id="rejected_template" translate="label" type="select" sortOrder="60" showInDefault="1"
+                       showInWebsite="1" canRestore="1">
+                    <label>Company Rejected Template</label>
+                    <source_model>Magento\Config\Model\Config\Source\Email\Template</source_model>
+                </field>
+                <field id="blocked_template" translate="label" type="select" sortOrder="70" showInDefault="1"
+                       showInWebsite="1" canRestore="1">
+                    <label>Company Blocked Template</label>
+                    <source_model>Magento\Config\Model\Config\Source\Email\Template</source_model>
+                </field>
+                <field id="unblocked_template" translate="label" type="select" sortOrder="80" showInDefault="1"
+                       showInWebsite="1" canRestore="1">
+                    <label>Company Unblocked Template</label>
+                    <source_model>Magento\Config\Model\Config\Source\Email\Template</source_model>
+                </field>
+                <field id="new_message_customer_template" translate="label" type="select" sortOrder="90" showInDefault="1"
+                       showInWebsite="1" canRestore="1">
+                    <label>New Message (Customer) Template</label>
+                    <source_model>Magento\Config\Model\Config\Source\Email\Template</source_model>
+                </field>
+                <field id="new_message_admin_template" translate="label" type="select" sortOrder="100" showInDefault="1"
+                       showInWebsite="1" canRestore="1">
+                    <label>New Message (Admin) Template</label>
+                    <source_model>Magento\Config\Model\Config\Source\Email\Template</source_model>
+                </field>
+                <field id="invitation_template" translate="label" type="select" sortOrder="110" showInDefault="1"
+                       showInWebsite="1" canRestore="1">
+                    <label>User Invitation Template</label>
+                    <source_model>Magento\Config\Model\Config\Source\Email\Template</source_model>
+                </field>
+            </group>
+            <group id="users" translate="label" type="text" sortOrder="35" showInDefault="1" showInWebsite="1">
+                <label>Company Users</label>
+                <field id="invitation_lifetime" translate="label comment" type="text" sortOrder="10" showInDefault="1"
+                       showInWebsite="1" canRestore="1">
+                    <label>Invitation Lifetime (Days)</label>
+                    <comment>How long an invitation link stays valid.</comment>
+                    <validate>required-entry validate-digits validate-greater-than-zero</validate>
+                </field>
+            </group>
+            <group id="messages" translate="label" type="text" sortOrder="40" showInDefault="1" showInWebsite="1">
+                <label>Messages</label>
+                <field id="max_length" translate="label comment" type="text" sortOrder="10" showInDefault="1"
+                       showInWebsite="1" canRestore="1">
+                    <label>Maximum Message Length</label>
+                    <comment>Characters. 0 for no limit.</comment>
+                    <validate>validate-zero-or-greater validate-digits</validate>
+                </field>
+                <field id="rate_limit" translate="label comment" type="text" sortOrder="20" showInDefault="1"
+                       showInWebsite="1" canRestore="1">
+                    <label>Messages per Customer per Hour</label>
+                    <comment>0 for no limit.</comment>
+                    <validate>validate-zero-or-greater validate-digits</validate>
+                </field>
+            </group>
+        </section>
+        <section id="recaptcha_frontend">
+            <group id="type_for">
+                <field id="company_register" translate="label" type="select" sortOrder="140" showInDefault="1"
+                       showInWebsite="1" canRestore="1">
+                    <label>Enable for Company Registration</label>
+                    <source_model>Magento\ReCaptchaAdminUi\Model\OptionSource\Type</source_model>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

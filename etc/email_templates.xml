@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Email:etc/email_templates.xsd">
+    <template id="company_email_application_received_template" label="Company Application Received"
+              file="application_received.html" type="html" module="MageOS_Company" area="frontend"/>
+    <template id="company_email_admin_new_application_template" label="Company Application (Admin)"
+              file="admin_new_application.html" type="html" module="MageOS_Company" area="frontend"/>
+    <template id="company_email_approved_template" label="Company Approved"
+              file="approved.html" type="html" module="MageOS_Company" area="frontend"/>
+    <template id="company_email_rejected_template" label="Company Rejected"
+              file="rejected.html" type="html" module="MageOS_Company" area="frontend"/>
+    <template id="company_email_blocked_template" label="Company Blocked"
+              file="blocked.html" type="html" module="MageOS_Company" area="frontend"/>
+    <template id="company_email_unblocked_template" label="Company Unblocked"
+              file="unblocked.html" type="html" module="MageOS_Company" area="frontend"/>
+    <template id="company_email_new_message_customer_template" label="Company New Message (Customer)"
+              file="new_message_customer.html" type="html" module="MageOS_Company" area="frontend"/>
+    <template id="company_email_new_message_admin_template" label="Company New Message (Admin)"
+              file="new_message_admin.html" type="html" module="MageOS_Company" area="frontend"/>
+    <template id="company_email_invitation_template" label="Company User Invitation"
+              file="invitation.html" type="html" module="MageOS_Company" area="frontend"/>
+</config>

@@ -1,0 +1,111 @@
+<?php
+/**
+ * Company invitation landing page.
+ *
+ * @var \Magento\Framework\View\Element\Template $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+
+use MageOS\Company\ViewModel\InvitationAccept;
+
+/** @var InvitationAccept $viewModel */
+$viewModel = $block->getData('view_model');
+$mode = $viewModel->getMode();
+$invitation = $viewModel->getInvitation();
+?>
+<div class="company-invitation">
+    <?php if ($mode === InvitationAccept::MODE_INVALID): ?>
+        <div class="message error">
+            <span>
+                <?= $escaper->escapeHtml(
+                    __('This invitation is no longer valid. Ask your company administrator to send a new one.')
+                ) ?>
+            </span>
+        </div>
+    <?php else: ?>
+        <p><?= $escaper->escapeHtml(__('You have been invited to join %1.', $viewModel->getCompanyName())) ?></p>
+
+        <?php if ($mode === InvitationAccept::MODE_WRONG_ACCOUNT): ?>
+            <div class="message warning">
+                <span><?= $escaper->escapeHtml(__(
+                    'This invitation was sent to %1. Sign out and sign in with that account to accept it.',
+                    $invitation->getEmail()
+                )) ?></span>
+            </div>
+            <a class="action" href="<?= $escaper->escapeUrl($viewModel->getLogoutUrl()) ?>">
+                <span><?= $escaper->escapeHtml(__('Sign Out')) ?></span>
+            </a>
+        <?php elseif ($mode === InvitationAccept::MODE_SIGN_IN): ?>
+            <p>
+                <?= $escaper->escapeHtml(
+                    __('There is already an account for %1. Sign in to accept the invitation.', $invitation->getEmail())
+                ) ?>
+            </p>
+            <a class="action primary" href="<?= $escaper->escapeUrl($viewModel->getLoginUrl()) ?>">
+                <span><?= $escaper->escapeHtml(__('Sign In')) ?></span>
+            </a>
+        <?php else: ?>
+            <form class="form company-invitation-accept" method="post" data-mage-init='{"validation":{}}'
+                  action="<?= $escaper->escapeUrl($viewModel->getPostUrl()) ?>">
+                <?= $block->getBlockHtml('formkey') ?>
+                <input type="hidden" name="token" value="<?= $escaper->escapeHtmlAttr($viewModel->getToken()) ?>"/>
+                <?php if ($mode === InvitationAccept::MODE_CREATE_ACCOUNT): ?>
+                    <fieldset class="fieldset create account">
+                        <legend class="legend">
+                            <span><?= $escaper->escapeHtml(__('Create Your Account')) ?></span>
+                        </legend>
+                        <div class="field">
+                            <label class="label"><span><?= $escaper->escapeHtml(__('Email')) ?></span></label>
+                            <div class="control">
+                                <strong><?= $escaper->escapeHtml($invitation->getEmail()) ?></strong>
+                            </div>
+                        </div>
+                        <?php $nameFields = ['firstname' => __('First Name'), 'lastname' => __('Last Name')]; ?>
+                        <?php foreach ($nameFields as $code => $label): ?>
+                            <div class="field required">
+                                <label class="label" for="<?= $escaper->escapeHtmlAttr($code) ?>">
+                                    <span><?= $escaper->escapeHtml($label) ?></span>
+                                </label>
+                                <div class="control">
+                                    <input type="text" name="<?= $escaper->escapeHtmlAttr($code) ?>"
+                                           id="<?= $escaper->escapeHtmlAttr($code) ?>"
+                                           class="input-text required-entry"/>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                        <div class="field password required">
+                            <label class="label" for="password">
+                                <span><?= $escaper->escapeHtml(__('Password')) ?></span>
+                            </label>
+                            <div class="control">
+                                <input type="password" name="password" id="password" autocomplete="new-password"
+                                       class="input-text"
+                                       data-password-min-length="<?= (int)$viewModel->getMinimumPasswordLength() ?>"
+                                       data-password-min-character-sets="<?=
+                                            (int)$viewModel->getRequiredCharacterClassesNumber() ?>"
+                                       data-validate="{required:true, 'validate-customer-password':true}"/>
+                            </div>
+                        </div>
+                        <div class="field confirmation required">
+                            <label class="label" for="password-confirmation">
+                                <span><?= $escaper->escapeHtml(__('Confirm Password')) ?></span>
+                            </label>
+                            <div class="control">
+                                <input type="password" name="password_confirmation" id="password-confirmation"
+                                       autocomplete="new-password" class="input-text"
+                                       data-validate="{required:true, equalTo:'#password'}"/>
+                            </div>
+                        </div>
+                    </fieldset>
+                <?php endif; ?>
+                <div class="actions-toolbar">
+                    <div class="primary">
+                        <button type="submit" class="action submit primary">
+                            <span><?= $escaper->escapeHtml(__('Join %1', $viewModel->getCompanyName())) ?></span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        <?php endif; ?>
+    <?php endif; ?>
+</div>

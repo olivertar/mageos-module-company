@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<listing xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <argument name="data" xsi:type="array">
+        <item name="js_config" xsi:type="array">
+            <item name="provider" xsi:type="string">company_message_listing.company_message_listing_data_source</item>
+        </item>
+    </argument>
+    <settings>
+        <spinner>company_message_columns</spinner>
+        <deps>
+            <dep>company_message_listing.company_message_listing_data_source</dep>
+        </deps>
+    </settings>
+    <dataSource name="company_message_listing_data_source" component="Magento_Ui/js/grid/provider">
+        <settings>
+            <storageConfig>
+                <param name="indexField" xsi:type="string">entity_id</param>
+            </storageConfig>
+            <updateUrl path="mui/index/render"/>
+        </settings>
+        <aclResource>MageOS_Company::messages</aclResource>
+        <dataProvider class="MageOS\Company\Ui\DataProvider\Message\ThreadListingDataProvider"
+                      name="company_message_listing_data_source">
+            <settings>
+                <requestFieldName>id</requestFieldName>
+                <primaryFieldName>entity_id</primaryFieldName>
+            </settings>
+        </dataProvider>
+    </dataSource>
+    <listingToolbar name="listing_top">
+        <settings>
+            <sticky>true</sticky>
+        </settings>
+        <bookmark name="bookmarks"/>
+        <columnsControls name="columns_controls"/>
+        <filterSearch name="fulltext"/>
+        <filters name="listing_filters"/>
+        <paging name="listing_paging"/>
+    </listingToolbar>
+    <columns name="company_message_columns">
+        <column name="name" sortOrder="10">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">Company Name</label>
+            </settings>
+        </column>
+        <column name="email" sortOrder="20">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">Company Email</label>
+            </settings>
+        </column>
+        <column name="status" class="MageOS\Company\Ui\Component\Listing\Column\Status" sortOrder="30">
+            <settings>
+                <filter>select</filter>
+                <options class="MageOS\Company\Model\Company\Attribute\Source\Status"/>
+                <dataType>select</dataType>
+                <bodyTmpl>ui/grid/cells/html</bodyTmpl>
+                <label translate="true">Status</label>
+            </settings>
+        </column>
+        <column name="last_message" sortOrder="40">
+            <settings>
+                <label translate="true">Last Message</label>
+                <sortable>false</sortable>
+            </settings>
+        </column>
+        <column name="last_message_at" class="Magento\Ui\Component\Listing\Columns\Date"
+                component="Magento_Ui/js/grid/columns/date" sortOrder="50">
+            <settings>
+                <dataType>date</dataType>
+                <label translate="true">Last Message At</label>
+                <sorting>desc</sorting>
+            </settings>
+        </column>
+        <column name="messages_count" sortOrder="60">
+            <settings>
+                <label translate="true">Messages</label>
+            </settings>
+        </column>
+        <column name="unread_count" sortOrder="70">
+            <settings>
+                <filter>select</filter>
+                <options class="Magento\Config\Model\Config\Source\Yesno"/>
+                <label translate="true">Unread</label>
+            </settings>
+        </column>
+        <actionsColumn name="actions" class="MageOS\Company\Ui\Component\Listing\Message\Actions" sortOrder="200">
+            <settings>
+                <indexField>entity_id</indexField>
+            </settings>
+        </actionsColumn>
+    </columns>
+</listing>

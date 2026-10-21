@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="1column"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceContainer name="content">
+            <block class="Magento\Framework\View\Element\Template" name="company.register.form"
+                   template="MageOS_Company::register/form.phtml" cacheable="false">
+                <arguments>
+                    <argument name="view_model" xsi:type="object">MageOS\Company\ViewModel\Registration</argument>
+                </arguments>
+                <block class="Magento\Framework\View\Element\Template" name="company.register.field" as="field"
+                       template="MageOS_Company::register/field.phtml"/>
+                <block class="Magento\Framework\View\Element\Template" name="company.register.country_region"
+                       as="country_region" template="MageOS_Company::form/country-region.phtml"/>
+                <container name="company.register.form.additional" as="form_additional_info">
+                    <block class="Magento\ReCaptchaUi\Block\ReCaptcha" name="company.register.recaptcha"
+                           template="Magento_ReCaptchaFrontendUi::recaptcha.phtml"
+                           ifconfig="recaptcha_frontend/type_for/company_register">
+                        <arguments>
+                            <argument name="recaptcha_for" xsi:type="string">company_register</argument>
+                            <argument name="jsLayout" xsi:type="array">
+                                <item name="components" xsi:type="array">
+                                    <item name="recaptcha" xsi:type="array">
+                                        <item name="component" xsi:type="string">Magento_ReCaptchaFrontendUi/js/reCaptcha</item>
+                                    </item>
+                                </item>
+                            </argument>
+                        </arguments>
+                    </block>
+                </container>
+            </block>
+        </referenceContainer>
+    </body>
+</page>

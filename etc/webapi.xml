@@ -1,0 +1,301 @@
+<?xml version="1.0"?>
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Webapi:etc/webapi.xsd">
+    <!--
+        "mine" routes: the customer is always taken from the token.
+        PUT address routes use ":id" so the web API copies it into the address payload.
+        PUT /V1/companies/:companyId also copies the path ID into the payload "company_id" (the ERP code): it is
+        ignored by CompanyManagementInterface::update(), the ERP code has its own route.
+    -->
+    <route url="/V1/companies" method="GET">
+        <service class="MageOS\Company\Api\CompanyRepositoryInterface" method="getList"/>
+        <resources>
+            <resource ref="MageOS_Company::company_view"/>
+        </resources>
+    </route>
+    <route url="/V1/companies/mine" method="GET">
+        <service class="MageOS\Company\Api\MyCompanyManagementInterface" method="get"/>
+        <resources>
+            <resource ref="self"/>
+        </resources>
+        <data>
+            <parameter name="customerId" force="true">%customer_id%</parameter>
+        </data>
+    </route>
+    <route url="/V1/companies/mine" method="PUT">
+        <service class="MageOS\Company\Api\MyCompanyManagementInterface" method="update"/>
+        <resources>
+            <resource ref="self"/>
+        </resources>
+        <data>
+            <parameter name="customerId" force="true">%customer_id%</parameter>
+        </data>
+    </route>
+    <route url="/V1/companies/mine/addresses" method="GET">
+        <service class="MageOS\Company\Api\MyCompanyManagementInterface" method="getAddresses"/>
+        <resources>
+            <resource ref="self"/>
+        </resources>
+        <data>
+            <parameter name="customerId" force="true">%customer_id%</parameter>
+        </data>
+    </route>
+    <route url="/V1/companies/mine/addresses/:addressId" method="GET">
+        <service class="MageOS\Company\Api\MyCompanyManagementInterface" method="getAddress"/>
+        <resources>
+            <resource ref="self"/>
+        </resources>
+        <data>
+            <parameter name="customerId" force="true">%customer_id%</parameter>
+        </data>
+    </route>
+    <route url="/V1/companies/mine/addresses" method="POST">
+        <service class="MageOS\Company\Api\MyCompanyManagementInterface" method="saveAddress"/>
+        <resources>
+            <resource ref="self"/>
+        </resources>
+        <data>
+            <parameter name="customerId" force="true">%customer_id%</parameter>
+        </data>
+    </route>
+    <route url="/V1/companies/mine/addresses/:id" method="PUT">
+        <service class="MageOS\Company\Api\MyCompanyManagementInterface" method="saveAddress"/>
+        <resources>
+            <resource ref="self"/>
+        </resources>
+        <data>
+            <parameter name="customerId" force="true">%customer_id%</parameter>
+        </data>
+    </route>
+    <route url="/V1/companies/mine/addresses/:addressId" method="DELETE">
+        <service class="MageOS\Company\Api\MyCompanyManagementInterface" method="deleteAddress"/>
+        <resources>
+            <resource ref="self"/>
+        </resources>
+        <data>
+            <parameter name="customerId" force="true">%customer_id%</parameter>
+        </data>
+    </route>
+    <route url="/V1/companies/mine/customers/:userId" method="PUT">
+        <service class="MageOS\Company\Api\MyCompanyManagementInterface" method="updateUser"/>
+        <resources>
+            <resource ref="self"/>
+        </resources>
+        <data>
+            <parameter name="customerId" force="true">%customer_id%</parameter>
+        </data>
+    </route>
+    <route url="/V1/companies/mine/customers/:userId" method="DELETE">
+        <service class="MageOS\Company\Api\MyCompanyManagementInterface" method="removeUser"/>
+        <resources>
+            <resource ref="self"/>
+        </resources>
+        <data>
+            <parameter name="customerId" force="true">%customer_id%</parameter>
+        </data>
+    </route>
+    <route url="/V1/companies/mine/addresses/:addressId/default/:type" method="PUT">
+        <service class="MageOS\Company\Api\MyCompanyManagementInterface" method="setDefaultAddress"/>
+        <resources>
+            <resource ref="self"/>
+        </resources>
+        <data>
+            <parameter name="customerId" force="true">%customer_id%</parameter>
+        </data>
+    </route>
+    <route url="/V1/companies/mine/customers" method="GET">
+        <service class="MageOS\Company\Api\MyCompanyManagementInterface" method="getUsers"/>
+        <resources>
+            <resource ref="self"/>
+        </resources>
+        <data>
+            <parameter name="customerId" force="true">%customer_id%</parameter>
+        </data>
+    </route>
+    <route url="/V1/companies/mine/customers" method="POST">
+        <service class="MageOS\Company\Api\MyCompanyManagementInterface" method="inviteUser"/>
+        <resources>
+            <resource ref="self"/>
+        </resources>
+        <data>
+            <parameter name="customerId" force="true">%customer_id%</parameter>
+        </data>
+    </route>
+    <route url="/V1/companies/mine/messages" method="GET">
+        <service class="MageOS\Company\Api\MyCompanyManagementInterface" method="getMessages"/>
+        <resources>
+            <resource ref="self"/>
+        </resources>
+        <data>
+            <parameter name="customerId" force="true">%customer_id%</parameter>
+        </data>
+    </route>
+    <route url="/V1/companies/mine/messages" method="POST">
+        <service class="MageOS\Company\Api\MyCompanyManagementInterface" method="sendMessage"/>
+        <resources>
+            <resource ref="self"/>
+        </resources>
+        <data>
+            <parameter name="customerId" force="true">%customer_id%</parameter>
+        </data>
+    </route>
+    <route url="/V1/companies/mine/messages/read" method="POST">
+        <service class="MageOS\Company\Api\MyCompanyManagementInterface" method="markMessagesRead"/>
+        <resources>
+            <resource ref="self"/>
+        </resources>
+        <data>
+            <parameter name="customerId" force="true">%customer_id%</parameter>
+        </data>
+    </route>
+    <route url="/V1/companies/register" method="POST">
+        <service class="MageOS\Company\Api\CompanyRegistrationInterface" method="apply"/>
+        <resources>
+            <resource ref="anonymous"/>
+        </resources>
+    </route>
+    <route url="/V1/companies/erp/:erpCode" method="GET">
+        <service class="MageOS\Company\Api\CompanyRepositoryInterface" method="getByErpCode"/>
+        <resources>
+            <resource ref="MageOS_Company::company_erp"/>
+        </resources>
+    </route>
+    <route url="/V1/companies/:companyId" method="GET">
+        <service class="MageOS\Company\Api\CompanyRepositoryInterface" method="getById"/>
+        <resources>
+            <resource ref="MageOS_Company::company_view"/>
+        </resources>
+    </route>
+    <route url="/V1/companies" method="POST">
+        <service class="MageOS\Company\Api\CompanyManagementInterface" method="create"/>
+        <resources>
+            <resource ref="MageOS_Company::company_edit"/>
+        </resources>
+    </route>
+    <route url="/V1/companies/:companyId" method="PUT">
+        <service class="MageOS\Company\Api\CompanyManagementInterface" method="update"/>
+        <resources>
+            <resource ref="MageOS_Company::company_edit"/>
+        </resources>
+    </route>
+    <route url="/V1/companies/:companyId" method="DELETE">
+        <service class="MageOS\Company\Api\CompanyRepositoryInterface" method="deleteById"/>
+        <resources>
+            <resource ref="MageOS_Company::company_delete"/>
+        </resources>
+    </route>
+    <route url="/V1/companies/:companyId/erp" method="PUT">
+        <service class="MageOS\Company\Api\CompanyManagementInterface" method="setErpCode"/>
+        <resources>
+            <resource ref="MageOS_Company::company_erp"/>
+        </resources>
+    </route>
+    <route url="/V1/companies/:companyId/approve" method="POST">
+        <service class="MageOS\Company\Api\CompanyApprovalInterface" method="approve"/>
+        <resources>
+            <resource ref="MageOS_Company::company_approve"/>
+        </resources>
+    </route>
+    <route url="/V1/companies/:companyId/reject" method="POST">
+        <service class="MageOS\Company\Api\CompanyApprovalInterface" method="reject"/>
+        <resources>
+            <resource ref="MageOS_Company::company_approve"/>
+        </resources>
+    </route>
+    <route url="/V1/companies/:companyId/block" method="POST">
+        <service class="MageOS\Company\Api\CompanyApprovalInterface" method="block"/>
+        <resources>
+            <resource ref="MageOS_Company::company_approve"/>
+        </resources>
+    </route>
+    <route url="/V1/companies/:companyId/unblock" method="POST">
+        <service class="MageOS\Company\Api\CompanyApprovalInterface" method="unblock"/>
+        <resources>
+            <resource ref="MageOS_Company::company_approve"/>
+        </resources>
+    </route>
+    <route url="/V1/companies/:companyId/resubmit" method="POST">
+        <service class="MageOS\Company\Api\CompanyApprovalInterface" method="resubmit"/>
+        <resources>
+            <resource ref="MageOS_Company::company_approve"/>
+        </resources>
+    </route>
+    <route url="/V1/companies/:companyId/history" method="GET">
+        <service class="MageOS\Company\Api\CompanyApprovalInterface" method="getHistory"/>
+        <resources>
+            <resource ref="MageOS_Company::company_view"/>
+        </resources>
+    </route>
+    <route url="/V1/companies/:companyId/customers" method="GET">
+        <service class="MageOS\Company\Api\CompanyManagementInterface" method="getCustomers"/>
+        <resources>
+            <resource ref="MageOS_Company::company_view"/>
+        </resources>
+    </route>
+    <route url="/V1/companies/:companyId/customers" method="POST">
+        <service class="MageOS\Company\Api\CompanyManagementInterface" method="assignCustomer"/>
+        <resources>
+            <resource ref="MageOS_Company::company_edit"/>
+        </resources>
+    </route>
+    <route url="/V1/companies/:companyId/customers/:customerId/status" method="PUT">
+        <service class="MageOS\Company\Api\CompanyManagementInterface" method="setCustomerStatus"/>
+        <resources>
+            <resource ref="MageOS_Company::company_edit"/>
+        </resources>
+    </route>
+    <route url="/V1/companies/:companyId/customers/:customerId" method="DELETE">
+        <service class="MageOS\Company\Api\CompanyManagementInterface" method="unassignCustomer"/>
+        <resources>
+            <resource ref="MageOS_Company::company_edit"/>
+        </resources>
+    </route>
+    <route url="/V1/companies/:companyId/super-user/:customerId" method="PUT">
+        <service class="MageOS\Company\Api\CompanyManagementInterface" method="setSuperUser"/>
+        <resources>
+            <resource ref="MageOS_Company::company_edit"/>
+        </resources>
+    </route>
+    <route url="/V1/companies/:companyId/addresses" method="GET">
+        <service class="MageOS\Company\Api\CompanyAddressManagementInterface" method="getList"/>
+        <resources>
+            <resource ref="MageOS_Company::company_view"/>
+        </resources>
+    </route>
+    <route url="/V1/companies/:companyId/addresses/:addressId" method="GET">
+        <service class="MageOS\Company\Api\CompanyAddressManagementInterface" method="get"/>
+        <resources>
+            <resource ref="MageOS_Company::company_view"/>
+        </resources>
+    </route>
+    <route url="/V1/companies/:companyId/addresses" method="POST">
+        <service class="MageOS\Company\Api\CompanyAddressManagementInterface" method="save"/>
+        <resources>
+            <resource ref="MageOS_Company::company_edit"/>
+        </resources>
+    </route>
+    <route url="/V1/companies/:companyId/addresses/:id" method="PUT">
+        <service class="MageOS\Company\Api\CompanyAddressManagementInterface" method="save"/>
+        <resources>
+            <resource ref="MageOS_Company::company_edit"/>
+        </resources>
+    </route>
+    <route url="/V1/companies/:companyId/addresses/:addressId" method="DELETE">
+        <service class="MageOS\Company\Api\CompanyAddressManagementInterface" method="delete"/>
+        <resources>
+            <resource ref="MageOS_Company::company_edit"/>
+        </resources>
+    </route>
+    <route url="/V1/companies/:companyId/messages" method="GET">
+        <service class="MageOS\Company\Api\MessageManagementInterface" method="getThread"/>
+        <resources>
+            <resource ref="MageOS_Company::messages"/>
+        </resources>
+    </route>
+    <route url="/V1/companies/:companyId/messages" method="POST">
+        <service class="MageOS\Company\Api\MessageManagementInterface" method="sendAsAdmin"/>
+        <resources>
+            <resource ref="MageOS_Company::messages"/>
+        </resources>
+    </route>
+</routes>

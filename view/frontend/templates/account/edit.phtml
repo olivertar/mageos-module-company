@@ -1,0 +1,36 @@
+<?php
+/**
+ * Company profile edit form.
+ *
+ * @var \Magento\Framework\View\Element\Template $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+
+/** @var \MageOS\Company\ViewModel\CompanyAccount $viewModel */
+$viewModel = $block->getData('view_model');
+/** @var \Magento\Framework\View\Element\Template $fieldRenderer */
+$fieldRenderer = $block->getChildBlock('field');
+?>
+<form class="form company-edit" method="post" id="company-edit-form"
+      action="<?= $escaper->escapeUrl($viewModel->getUrl('company/account/editPost')) ?>"
+      data-mage-init='{"validation":{}}'>
+    <?= $block->getBlockHtml('formkey') ?>
+    <fieldset class="fieldset">
+        <legend class="legend"><span><?= $escaper->escapeHtml(__('Company Information')) ?></span></legend>
+        <?php foreach ($viewModel->getCompanyFields() as $field): ?>
+            <?= /* @noEscape */ $fieldRenderer->setData('field', $field)->toHtml() ?>
+        <?php endforeach; ?>
+    </fieldset>
+    <div class="actions-toolbar">
+        <div class="primary">
+            <button type="submit" class="action save primary">
+                <span><?= $escaper->escapeHtml(__('Save')) ?></span>
+            </button>
+        </div>
+        <div class="secondary">
+            <a class="action back" href="<?= $escaper->escapeUrl($viewModel->getUrl('company/account')) ?>">
+                <span><?= $escaper->escapeHtml(__('Back')) ?></span>
+            </a>
+        </div>
+    </div>
+</form>

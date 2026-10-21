@@ -1,0 +1,18 @@
+<!--@subject {{trans "Your company account at %store_name has been blocked" store_name=$store.frontend_name}} @-->
+<!--@vars {
+"var store.frontend_name":"Store Name",
+"var customer_name":"Contact Name",
+"var company_name":"Company Name",
+"var comment":"Reason"
+} @-->
+
+{{template config_path="design/email/header_template"}}
+
+<p class="greeting">{{trans "%name," name=$customer_name}}</p>
+<p>{{trans "The company account for %company_name has been blocked. Its users cannot sign in until it is unblocked." company_name=$company_name}}</p>
+{{depend comment}}
+<p><strong>{{trans "Reason:"}}</strong> {{var comment}}</p>
+{{/depend}}
+<p>{{trans "Please contact us if you have any questions."}}</p>
+
+{{template config_path="design/email/footer_template"}}

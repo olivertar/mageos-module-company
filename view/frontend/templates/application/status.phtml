@@ -1,0 +1,134 @@
+<?php
+/**
+ * Public application status page: status, rejection reason, messages, reply and resubmit.
+ *
+ * @var \Magento\Framework\View\Element\Template $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+
+/** @var \MageOS\Company\ViewModel\ApplicationStatus $viewModel */
+$viewModel = $block->getData('view_model');
+$company = $viewModel->getCompany();
+?>
+<?php if ($company === null): ?>
+    <div class="message error"><span><?= $escaper->escapeHtml($viewModel->getError()) ?></span></div>
+<?php else: ?>
+    <?php
+    $token = $viewModel->getToken();
+    $thread = $viewModel->getThread();
+    $maxLength = $viewModel->getMaxLength();
+    ?>
+    <div class="company-application-status">
+        <div class="block block-company-application">
+            <div class="block-title"><strong><?= $escaper->escapeHtml($company->getName()) ?></strong></div>
+            <div class="block-content">
+                <p>
+                    <?= $escaper->escapeHtml(__('Application status:')) ?>
+                    <strong><?= $escaper->escapeHtml($viewModel->getStatusLabel()) ?></strong>
+                </p>
+                <?php if ($viewModel->isRejected()): ?>
+                    <?php $reason = $viewModel->getRejectionReason(); ?>
+                    <?php if ($reason !== ''): ?>
+                        <p>
+                            <strong><?= $escaper->escapeHtml(__('Reason:')) ?></strong>
+                            <?= /* @noEscape */ nl2br($escaper->escapeHtml($reason)) ?>
+                        </p>
+                    <?php endif; ?>
+                <?php else: ?>
+                    <?php $reviewing = __(
+                        'We are reviewing your application. You will be able to sign in once it is approved.'
+                    ); ?>
+                    <p><?= $escaper->escapeHtml($reviewing) ?></p>
+                <?php endif; ?>
+            </div>
+        </div>
+
+        <?php if ($viewModel->isRejected()): ?>
+            <form class="form company-application-resubmit" method="post"
+                  action="<?= $escaper->escapeUrl($viewModel->getResubmitUrl()) ?>">
+                <?= $block->getBlockHtml('formkey') ?>
+                <input type="hidden" name="token" value="<?= $escaper->escapeHtmlAttr($token) ?>"/>
+                <fieldset class="fieldset">
+                    <legend class="legend"><span><?= $escaper->escapeHtml(__('Resubmit Application')) ?></span></legend>
+                    <div class="field comment">
+                        <label class="label" for="company-application-comment">
+                            <span><?= $escaper->escapeHtml(__('What has changed? (optional)')) ?></span>
+                        </label>
+                        <div class="control">
+                            <textarea name="comment" id="company-application-comment" rows="3" class="input-text"
+                                      maxlength="2000"></textarea>
+                        </div>
+                    </div>
+                </fieldset>
+                <div class="actions-toolbar">
+                    <div class="primary">
+                        <button type="submit" class="action submit primary">
+                            <span><?= $escaper->escapeHtml(__('Resubmit Application')) ?></span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        <?php endif; ?>
+
+        <div class="company-messages">
+            <h2><?= $escaper->escapeHtml(__('Messages')) ?></h2>
+            <?php if (!$thread): ?>
+                <div class="message info empty">
+                    <span><?= $escaper->escapeHtml(__('There are no messages yet.')) ?></span>
+                </div>
+            <?php else: ?>
+                <ol class="company-message-thread">
+                    <?php foreach ($thread as $message): ?>
+                        <li class="company-message <?= $viewModel->isFromStore($message)
+                            ? 'from-store' : 'from-company' ?>">
+                            <div class="company-message-meta">
+                                <strong><?= $escaper->escapeHtml($viewModel->getAuthorLabel($message)) ?></strong>
+                                · <?= $escaper->escapeHtml($block->formatDate(
+                                    $message->getCreatedAt(),
+                                    \IntlDateFormatter::MEDIUM,
+                                    true
+                                )) ?>
+                                <?php if ($viewModel->isNew($message)): ?>
+                                    · <strong class="company-message-new">
+                                        <?= $escaper->escapeHtml(__('New')) ?>
+                                    </strong>
+                                <?php endif; ?>
+                            </div>
+                            <div class="company-message-body">
+                                <?= /* @noEscape */ nl2br($escaper->escapeHtml($message->getBody())) ?>
+                            </div>
+                        </li>
+                    <?php endforeach; ?>
+                </ol>
+            <?php endif; ?>
+
+            <form class="form company-message-form" method="post"
+                  action="<?= $escaper->escapeUrl($viewModel->getReplyUrl()) ?>"
+                  data-mage-init='{"validation":{}}'>
+                <?= $block->getBlockHtml('formkey') ?>
+                <input type="hidden" name="token" value="<?= $escaper->escapeHtmlAttr($token) ?>"/>
+                <fieldset class="fieldset">
+                    <legend class="legend"><span><?= $escaper->escapeHtml(__('Send a Message')) ?></span></legend>
+                    <div class="field body required">
+                        <label class="label" for="company-message-body">
+                            <span><?= $escaper->escapeHtml(__('Message')) ?></span>
+                        </label>
+                        <div class="control">
+                            <textarea name="body" id="company-message-body" rows="5" class="input-text"
+                                      <?= $maxLength ? 'maxlength="' . (int)$maxLength . '"' : '' ?>
+                                      data-validate="{required:true}"><?=
+                                        $escaper->escapeHtml($viewModel->getDraft()) ?></textarea>
+                        </div>
+                    </div>
+                </fieldset>
+                <div class="actions-toolbar">
+                    <div class="primary">
+                        <button type="submit" class="action submit primary">
+                            <span><?= $escaper->escapeHtml(__('Send')) ?></span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+<?php endif; ?>

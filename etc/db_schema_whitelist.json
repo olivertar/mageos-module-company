@@ -1,0 +1,371 @@
+{
+    "company_entity": {
+        "column": {
+            "entity_id": true,
+            "name": true,
+            "company_id": true,
+            "status": true,
+            "email": true,
+            "website_id": true,
+            "super_user_id": true,
+            "default_billing": true,
+            "default_shipping": true,
+            "legal_address": true,
+            "created_at": true,
+            "updated_at": true
+        },
+        "index": {
+            "COMPANY_ENTITY_NAME": true,
+            "COMPANY_ENTITY_STATUS": true,
+            "COMPANY_ENTITY_WEBSITE_ID": true,
+            "COMPANY_ENTITY_SUPER_USER_ID": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "COMPANY_ENTITY_WEBSITE_ID_STORE_WEBSITE_WEBSITE_ID": true,
+            "COMPANY_ENTITY_SUPER_USER_ID_CUSTOMER_ENTITY_ENTITY_ID": true,
+            "COMPANY_ENTITY_COMPANY_ID": true,
+            "COMPANY_ENTITY_EMAIL_WEBSITE_ID": true
+        }
+    },
+    "company_entity_datetime": {
+        "column": {
+            "value_id": true,
+            "attribute_id": true,
+            "entity_id": true,
+            "value": true
+        },
+        "index": {
+            "COMPANY_ENTITY_DATETIME_ATTRIBUTE_ID": true,
+            "COMPANY_ENTITY_DATETIME_ENTITY_ID_ATTRIBUTE_ID_VALUE": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "COMPANY_ENTITY_DATETIME_ATTRIBUTE_ID_EAV_ATTRIBUTE_ATTRIBUTE_ID": true,
+            "COMPANY_ENTITY_DATETIME_ENTITY_ID_COMPANY_ENTITY_ENTITY_ID": true,
+            "COMPANY_ENTITY_DATETIME_ENTITY_ID_ATTRIBUTE_ID": true
+        }
+    },
+    "company_entity_decimal": {
+        "column": {
+            "value_id": true,
+            "attribute_id": true,
+            "entity_id": true,
+            "value": true
+        },
+        "index": {
+            "COMPANY_ENTITY_DECIMAL_ATTRIBUTE_ID": true,
+            "COMPANY_ENTITY_DECIMAL_ENTITY_ID_ATTRIBUTE_ID_VALUE": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "COMPANY_ENTITY_DECIMAL_ATTRIBUTE_ID_EAV_ATTRIBUTE_ATTRIBUTE_ID": true,
+            "COMPANY_ENTITY_DECIMAL_ENTITY_ID_COMPANY_ENTITY_ENTITY_ID": true,
+            "COMPANY_ENTITY_DECIMAL_ENTITY_ID_ATTRIBUTE_ID": true
+        }
+    },
+    "company_entity_int": {
+        "column": {
+            "value_id": true,
+            "attribute_id": true,
+            "entity_id": true,
+            "value": true
+        },
+        "index": {
+            "COMPANY_ENTITY_INT_ATTRIBUTE_ID": true,
+            "COMPANY_ENTITY_INT_ENTITY_ID_ATTRIBUTE_ID_VALUE": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "COMPANY_ENTITY_INT_ATTRIBUTE_ID_EAV_ATTRIBUTE_ATTRIBUTE_ID": true,
+            "COMPANY_ENTITY_INT_ENTITY_ID_COMPANY_ENTITY_ENTITY_ID": true,
+            "COMPANY_ENTITY_INT_ENTITY_ID_ATTRIBUTE_ID": true
+        }
+    },
+    "company_entity_text": {
+        "column": {
+            "value_id": true,
+            "attribute_id": true,
+            "entity_id": true,
+            "value": true
+        },
+        "index": {
+            "COMPANY_ENTITY_TEXT_ATTRIBUTE_ID": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "COMPANY_ENTITY_TEXT_ATTRIBUTE_ID_EAV_ATTRIBUTE_ATTRIBUTE_ID": true,
+            "COMPANY_ENTITY_TEXT_ENTITY_ID_COMPANY_ENTITY_ENTITY_ID": true,
+            "COMPANY_ENTITY_TEXT_ENTITY_ID_ATTRIBUTE_ID": true
+        }
+    },
+    "company_entity_varchar": {
+        "column": {
+            "value_id": true,
+            "attribute_id": true,
+            "entity_id": true,
+            "value": true
+        },
+        "index": {
+            "COMPANY_ENTITY_VARCHAR_ATTRIBUTE_ID": true,
+            "COMPANY_ENTITY_VARCHAR_ENTITY_ID_ATTRIBUTE_ID_VALUE": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "COMPANY_ENTITY_VARCHAR_ATTRIBUTE_ID_EAV_ATTRIBUTE_ATTRIBUTE_ID": true,
+            "COMPANY_ENTITY_VARCHAR_ENTITY_ID_COMPANY_ENTITY_ENTITY_ID": true,
+            "COMPANY_ENTITY_VARCHAR_ENTITY_ID_ATTRIBUTE_ID": true
+        }
+    },
+    "company_address_entity": {
+        "column": {
+            "entity_id": true,
+            "parent_id": true,
+            "is_active": true,
+            "firstname": true,
+            "lastname": true,
+            "company": true,
+            "street": true,
+            "city": true,
+            "country_id": true,
+            "region": true,
+            "region_id": true,
+            "postcode": true,
+            "telephone": true,
+            "vat_id": true,
+            "created_at": true,
+            "updated_at": true
+        },
+        "index": {
+            "COMPANY_ADDRESS_ENTITY_PARENT_ID": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "COMPANY_ADDRESS_ENTITY_PARENT_ID_COMPANY_ENTITY_ENTITY_ID": true
+        }
+    },
+    "company_address_entity_datetime": {
+        "column": {
+            "value_id": true,
+            "attribute_id": true,
+            "entity_id": true,
+            "value": true
+        },
+        "index": {
+            "COMPANY_ADDRESS_ENTITY_DATETIME_ATTRIBUTE_ID": true,
+            "COMPANY_ADDRESS_ENTITY_DATETIME_ENTITY_ID_ATTRIBUTE_ID_VALUE": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "COMPANY_ADDR_ENTT_DTIME_ATTR_ID_EAV_ATTR_ATTR_ID": true,
+            "COMPANY_ADDR_ENTT_DTIME_ENTT_ID_COMPANY_ADDR_ENTT_ENTT_ID": true,
+            "COMPANY_ADDRESS_ENTITY_DATETIME_ENTITY_ID_ATTRIBUTE_ID": true
+        }
+    },
+    "company_address_entity_decimal": {
+        "column": {
+            "value_id": true,
+            "attribute_id": true,
+            "entity_id": true,
+            "value": true
+        },
+        "index": {
+            "COMPANY_ADDRESS_ENTITY_DECIMAL_ATTRIBUTE_ID": true,
+            "COMPANY_ADDRESS_ENTITY_DECIMAL_ENTITY_ID_ATTRIBUTE_ID_VALUE": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "COMPANY_ADDR_ENTT_DEC_ATTR_ID_EAV_ATTR_ATTR_ID": true,
+            "COMPANY_ADDR_ENTT_DEC_ENTT_ID_COMPANY_ADDR_ENTT_ENTT_ID": true,
+            "COMPANY_ADDRESS_ENTITY_DECIMAL_ENTITY_ID_ATTRIBUTE_ID": true
+        }
+    },
+    "company_address_entity_int": {
+        "column": {
+            "value_id": true,
+            "attribute_id": true,
+            "entity_id": true,
+            "value": true
+        },
+        "index": {
+            "COMPANY_ADDRESS_ENTITY_INT_ATTRIBUTE_ID": true,
+            "COMPANY_ADDRESS_ENTITY_INT_ENTITY_ID_ATTRIBUTE_ID_VALUE": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "COMPANY_ADDR_ENTT_INT_ATTR_ID_EAV_ATTR_ATTR_ID": true,
+            "COMPANY_ADDR_ENTT_INT_ENTT_ID_COMPANY_ADDR_ENTT_ENTT_ID": true,
+            "COMPANY_ADDRESS_ENTITY_INT_ENTITY_ID_ATTRIBUTE_ID": true
+        }
+    },
+    "company_address_entity_text": {
+        "column": {
+            "value_id": true,
+            "attribute_id": true,
+            "entity_id": true,
+            "value": true
+        },
+        "index": {
+            "COMPANY_ADDRESS_ENTITY_TEXT_ATTRIBUTE_ID": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "COMPANY_ADDR_ENTT_TEXT_ATTR_ID_EAV_ATTR_ATTR_ID": true,
+            "COMPANY_ADDR_ENTT_TEXT_ENTT_ID_COMPANY_ADDR_ENTT_ENTT_ID": true,
+            "COMPANY_ADDRESS_ENTITY_TEXT_ENTITY_ID_ATTRIBUTE_ID": true
+        }
+    },
+    "company_address_entity_varchar": {
+        "column": {
+            "value_id": true,
+            "attribute_id": true,
+            "entity_id": true,
+            "value": true
+        },
+        "index": {
+            "COMPANY_ADDRESS_ENTITY_VARCHAR_ATTRIBUTE_ID": true,
+            "COMPANY_ADDRESS_ENTITY_VARCHAR_ENTITY_ID_ATTRIBUTE_ID_VALUE": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "COMPANY_ADDR_ENTT_VCHR_ATTR_ID_EAV_ATTR_ATTR_ID": true,
+            "COMPANY_ADDR_ENTT_VCHR_ENTT_ID_COMPANY_ADDR_ENTT_ENTT_ID": true,
+            "COMPANY_ADDRESS_ENTITY_VARCHAR_ENTITY_ID_ATTRIBUTE_ID": true
+        }
+    },
+    "company_eav_attribute": {
+        "column": {
+            "attribute_id": true,
+            "is_visible": true,
+            "input_filter": true,
+            "multiline_count": true,
+            "validate_rules": true,
+            "is_system": true,
+            "sort_order": true,
+            "data_model": true,
+            "is_used_in_grid": true,
+            "is_visible_in_grid": true,
+            "is_filterable_in_grid": true,
+            "is_searchable_in_grid": true
+        },
+        "index": {
+            "COMPANY_EAV_ATTRIBUTE_SORT_ORDER": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "COMPANY_EAV_ATTRIBUTE_ATTRIBUTE_ID_EAV_ATTRIBUTE_ATTRIBUTE_ID": true
+        }
+    },
+    "company_form_attribute": {
+        "column": {
+            "form_code": true,
+            "attribute_id": true
+        },
+        "index": {
+            "COMPANY_FORM_ATTRIBUTE_ATTRIBUTE_ID": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "COMPANY_FORM_ATTRIBUTE_ATTRIBUTE_ID_EAV_ATTRIBUTE_ATTRIBUTE_ID": true
+        }
+    },
+    "company_eav_attribute_website": {
+        "column": {
+            "attribute_id": true,
+            "website_id": true,
+            "is_visible": true,
+            "is_required": true,
+            "default_value": true,
+            "multiline_count": true
+        },
+        "index": {
+            "COMPANY_EAV_ATTRIBUTE_WEBSITE_WEBSITE_ID": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "COMPANY_EAV_ATTR_WS_ATTR_ID_EAV_ATTR_ATTR_ID": true,
+            "COMPANY_EAV_ATTR_WS_WS_ID_STORE_WS_WS_ID": true
+        }
+    },
+    "company_customer": {
+        "column": {
+            "customer_id": true,
+            "company_entity_id": true,
+            "role": true,
+            "job_title": true,
+            "status": true,
+            "pending_welcome_email": true,
+            "created_at": true
+        },
+        "index": {
+            "COMPANY_CUSTOMER_COMPANY_ENTITY_ID_ROLE": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "COMPANY_CUSTOMER_CUSTOMER_ID_CUSTOMER_ENTITY_ENTITY_ID": true,
+            "COMPANY_CUSTOMER_COMPANY_ENTITY_ID_COMPANY_ENTITY_ENTITY_ID": true
+        }
+    },
+    "company_status_history": {
+        "column": {
+            "history_id": true,
+            "company_entity_id": true,
+            "from_status": true,
+            "to_status": true,
+            "comment": true,
+            "actor_type": true,
+            "actor_id": true,
+            "created_at": true
+        },
+        "index": {
+            "COMPANY_STATUS_HISTORY_COMPANY_ENTITY_ID": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "COMPANY_STS_HISTORY_COMPANY_ENTT_ID_COMPANY_ENTT_ENTT_ID": true
+        }
+    },
+    "company_message": {
+        "column": {
+            "message_id": true,
+            "company_entity_id": true,
+            "author_type": true,
+            "author_id": true,
+            "body": true,
+            "is_internal": true,
+            "read_at_admin": true,
+            "read_at_customer": true,
+            "created_at": true
+        },
+        "index": {
+            "COMPANY_MESSAGE_COMPANY_ENTITY_ID_CREATED_AT": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "COMPANY_MESSAGE_COMPANY_ENTITY_ID_COMPANY_ENTITY_ENTITY_ID": true
+        }
+    },
+    "company_invitation": {
+        "column": {
+            "invitation_id": true,
+            "company_entity_id": true,
+            "email": true,
+            "role": true,
+            "job_title": true,
+            "token_hash": true,
+            "invited_by": true,
+            "expires_at": true,
+            "accepted_at": true,
+            "created_at": true
+        },
+        "index": {
+            "COMPANY_INVITATION_COMPANY_ENTITY_ID_EMAIL": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "COMPANY_INVITATION_TOKEN_HASH": true,
+            "COMPANY_INVITATION_COMPANY_ENTITY_ID_COMPANY_ENTITY_ENTITY_ID": true,
+            "COMPANY_INVITATION_INVITED_BY_CUSTOMER_ENTITY_ENTITY_ID": true
+        }
+    }
+}

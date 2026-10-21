@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Indexer/etc/indexer.xsd">
+    <indexer id="company_grid" view_id="company_grid" class="Magento\Framework\Indexer\Action\Entity"
+             primary="company">
+        <title translate="true">Company Grid</title>
+        <description translate="true">Rebuild the admin company grid index</description>
+        <fieldset name="company" source="MageOS\Company\Model\Indexer\Source"
+                  provider="MageOS\Company\Model\Indexer\AttributeProvider">
+            <field name="name" xsi:type="searchable" dataType="varchar"/>
+            <field name="email" xsi:type="searchable" dataType="varchar"/>
+            <field name="company_id" xsi:type="searchable" dataType="varchar"/>
+            <field name="status" xsi:type="filterable" dataType="int"/>
+            <field name="website_id" xsi:type="filterable" dataType="int"/>
+            <field name="super_user_id" xsi:type="filterable" dataType="int"/>
+            <field name="created_at" xsi:type="filterable" dataType="timestamp"/>
+            <field name="updated_at" xsi:type="filterable" dataType="timestamp"/>
+        </fieldset>
+        <saveHandler class="Magento\Framework\Indexer\SaveHandler\Grid"/>
+        <structure class="Magento\Framework\Indexer\GridStructure"/>
+    </indexer>
+</config>

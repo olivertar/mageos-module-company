@@ -1,0 +1,66 @@
+<?php
+/**
+ * Company message thread in the customer account.
+ *
+ * @var \Magento\Framework\View\Element\Template $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+
+/** @var \MageOS\Company\ViewModel\Messages $viewModel */
+$viewModel = $block->getData('view_model');
+$thread = $viewModel->getThread();
+$maxLength = $viewModel->getMaxLength();
+?>
+<div class="company-messages">
+    <?php if (!$thread): ?>
+        <div class="message info empty"><span><?= $escaper->escapeHtml(__('There are no messages yet.')) ?></span></div>
+    <?php else: ?>
+        <ol class="company-message-thread">
+            <?php foreach ($thread as $message): ?>
+                <li class="company-message <?= $viewModel->isFromStore($message) ? 'from-store' : 'from-company' ?>">
+                    <div class="company-message-meta">
+                        <strong><?= $escaper->escapeHtml($viewModel->getAuthorLabel($message)) ?></strong>
+                        · <?= $escaper->escapeHtml($block->formatDate(
+                            $message->getCreatedAt(),
+                            \IntlDateFormatter::MEDIUM,
+                            true
+                        )) ?>
+                        <?php if ($viewModel->isNew($message)): ?>
+                            · <strong class="company-message-new"><?= $escaper->escapeHtml(__('New')) ?></strong>
+                        <?php endif; ?>
+                    </div>
+                    <div class="company-message-body">
+                        <?= /* @noEscape */ nl2br($escaper->escapeHtml($message->getBody())) ?>
+                    </div>
+                </li>
+            <?php endforeach; ?>
+        </ol>
+    <?php endif; ?>
+
+    <form class="form company-message-form" method="post"
+          action="<?= $escaper->escapeUrl($viewModel->getPostUrl()) ?>"
+          data-mage-init='{"validation":{}}'>
+        <?= $block->getBlockHtml('formkey') ?>
+        <fieldset class="fieldset">
+            <legend class="legend"><span><?= $escaper->escapeHtml(__('Send a Message')) ?></span></legend>
+            <div class="field body required">
+                <label class="label" for="company-message-body">
+                    <span><?= $escaper->escapeHtml(__('Message')) ?></span>
+                </label>
+                <div class="control">
+                    <textarea name="body" id="company-message-body" rows="5" class="input-text"
+                              <?= $maxLength ? 'maxlength="' . (int)$maxLength . '"' : '' ?>
+                              data-validate="{required:true}"><?=
+                                $escaper->escapeHtml($viewModel->getDraft()) ?></textarea>
+                </div>
+            </div>
+        </fieldset>
+        <div class="actions-toolbar">
+            <div class="primary">
+                <button type="submit" class="action submit primary">
+                    <span><?= $escaper->escapeHtml(__('Send')) ?></span>
+                </button>
+            </div>
+        </div>
+    </form>
+</div>

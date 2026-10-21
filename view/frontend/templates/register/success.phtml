@@ -1,0 +1,27 @@
+<?php
+/**
+ * Company application submitted.
+ *
+ * @var \Magento\Framework\View\Element\Template $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+
+$approved = (bool)$block->getData('approved');
+?>
+<div class="company-register-success">
+    <?php if ($approved): ?>
+        <p><?= $escaper->escapeHtml(__('Your company account has been created and approved.')) ?></p>
+        <p>
+            <a class="action primary" href="<?= $escaper->escapeUrl($block->getUrl('customer/account')) ?>">
+                <span><?= $escaper->escapeHtml(__('Go to My Account')) ?></span>
+            </a>
+        </p>
+    <?php else: ?>
+        <p><?= $escaper->escapeHtml(__('We have received your application and will review it shortly.')) ?></p>
+        <p>
+            <?= $escaper->escapeHtml(
+                __('You will be able to sign in once your company is approved. We will let you know by email.')
+            ) ?>
+        </p>
+    <?php endif; ?>
+</div>

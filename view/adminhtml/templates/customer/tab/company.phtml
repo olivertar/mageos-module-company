@@ -1,0 +1,54 @@
+<?php
+/**
+ * @var \MageOS\Company\Block\Adminhtml\Customer\Edit\Tab\Company $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+$company = $block->getCompany();
+$relation = $block->getRelation();
+?>
+<div class="fieldset-wrapper customer-information">
+    <div class="fieldset-wrapper-title">
+        <span class="title"><?= $escaper->escapeHtml(__('Company')) ?></span>
+    </div>
+    <?php if ($company === null || $relation === null): ?>
+        <p><?= $escaper->escapeHtml(__('This customer does not belong to any company.')) ?></p>
+    <?php else: ?>
+        <table class="admin__table-secondary">
+            <tbody>
+            <tr>
+                <th><?= $escaper->escapeHtml(__('Company Name')) ?>:</th>
+                <td>
+                    <a href="<?= $escaper->escapeUrl($block->getCompanyUrl($company)) ?>">
+                        <?= $escaper->escapeHtml($company->getName()) ?>
+                    </a>
+                </td>
+            </tr>
+            <tr>
+                <th><?= $escaper->escapeHtml(__('Status')) ?>:</th>
+                <td><?= $escaper->escapeHtml($block->getStatusLabel($company)) ?></td>
+            </tr>
+            <?php if ($company->getCompanyId()): ?>
+                <tr>
+                    <th><?= $escaper->escapeHtml(__('ERP Code')) ?>:</th>
+                    <td><?= $escaper->escapeHtml($company->getCompanyId()) ?></td>
+                </tr>
+            <?php endif; ?>
+            <tr>
+                <th><?= $escaper->escapeHtml(__('Role')) ?>:</th>
+                <td>
+                    <?= $escaper->escapeHtml($block->getRoleLabel($relation->getRole())) ?>
+                    <?php if ($company->getSuperUserId() === $block->getCustomerId()): ?>
+                        (<?= $escaper->escapeHtml(__('Super User')) ?>)
+                    <?php endif; ?>
+                </td>
+            </tr>
+            <?php if ($relation->getJobTitle()): ?>
+                <tr>
+                    <th><?= $escaper->escapeHtml(__('Job Title')) ?>:</th>
+                    <td><?= $escaper->escapeHtml($relation->getJobTitle()) ?></td>
+                </tr>
+            <?php endif; ?>
+            </tbody>
+        </table>
+    <?php endif; ?>
+</div>

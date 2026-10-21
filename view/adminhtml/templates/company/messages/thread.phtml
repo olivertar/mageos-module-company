@@ -1,0 +1,43 @@
+<?php
+/**
+ * Message list of the company form.
+ *
+ * @var \MageOS\Company\Block\Adminhtml\Company\Edit\Messages $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+
+$thread = $block->getThread();
+?>
+<?php if (!$thread): ?>
+    <div class="message message-notice"><?= $escaper->escapeHtml(__('No messages yet.')) ?></div>
+<?php else: ?>
+    <ul class="company-message-thread">
+        <?php foreach ($thread as $message): ?>
+            <?php
+            $classes = ['company-message', 'company-message-' . $message->getAuthorType()];
+            if ($message->getIsInternal()) {
+                $classes[] = 'company-message-internal';
+            }
+            ?>
+            <li class="<?= $escaper->escapeHtmlAttr(implode(' ', $classes)) ?>">
+                <div class="company-message-meta">
+                    <strong><?= $escaper->escapeHtml($block->getAuthorLabel($message)) ?></strong>
+                    · <?= $escaper->escapeHtml($block->formatDate(
+                        $message->getCreatedAt(),
+                        \IntlDateFormatter::MEDIUM,
+                        true
+                    )) ?>
+                    <?php if ($message->getIsInternal()): ?>
+                        · <em><?= $escaper->escapeHtml(__('Internal note')) ?></em>
+                    <?php endif; ?>
+                    <?php if ($block->isNew($message)): ?>
+                        · <span class="grid-severity-notice"><span><?= $escaper->escapeHtml(__('New')) ?></span></span>
+                    <?php endif; ?>
+                </div>
+                <div class="company-message-body">
+                    <?= /* @noEscape */ nl2br($escaper->escapeHtml($message->getBody())) ?>
+                </div>
+            </li>
+        <?php endforeach; ?>
+    </ul>
+<?php endif; ?>

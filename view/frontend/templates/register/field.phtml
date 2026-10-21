@@ -1,0 +1,73 @@
+<?php
+/**
+ * Generic field of the company registration form.
+ *
+ * @var \Magento\Framework\View\Element\Template $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+
+/** @var array<string,mixed> $field */
+$field = $block->getData('field');
+$input = (string)$field['input'];
+$id = (string)$field['id'];
+$name = (string)$field['name'];
+$value = $field['value'];
+$class = (string)$field['class'];
+$options = $input === 'boolean'
+    ? [['value' => '1', 'label' => __('Yes')], ['value' => '0', 'label' => __('No')]]
+    : $field['options'];
+$selected = array_map('strval', (array)$value);
+?>
+<div class="field <?= $escaper->escapeHtmlAttr($field['code']) ?><?= $field['required'] ? ' required' : '' ?>">
+    <label class="label" for="<?= $escaper->escapeHtmlAttr($id) ?>">
+        <span><?= $escaper->escapeHtml($field['label']) ?></span>
+    </label>
+    <div class="control">
+        <?php if ($input === 'textarea'): ?>
+            <textarea name="<?= $escaper->escapeHtmlAttr($name) ?>"
+                      id="<?= $escaper->escapeHtmlAttr($id) ?>"
+                      class="input-text <?= $escaper->escapeHtmlAttr($class) ?>"
+                      rows="4"><?= $escaper->escapeHtml((string)$value) ?></textarea>
+        <?php elseif ($input === 'select' || $input === 'boolean' || $input === 'multiselect'): ?>
+            <?php $multiple = $input === 'multiselect'; ?>
+            <select name="<?= $escaper->escapeHtmlAttr($name . ($multiple ? '[]' : '')) ?>"
+                    id="<?= $escaper->escapeHtmlAttr($id) ?>"
+                    class="<?= $multiple ? 'multiselect' : 'select' ?> <?= $escaper->escapeHtmlAttr($class) ?>"
+                    <?= $multiple ? 'multiple="multiple"' : '' ?>>
+                <?php if (!$multiple): ?>
+                    <option value=""><?= $escaper->escapeHtml(__('Please select')) ?></option>
+                <?php endif; ?>
+                <?php foreach ($options as $option): ?>
+                    <option value="<?= $escaper->escapeHtmlAttr($option['value']) ?>"
+                        <?= in_array((string)$option['value'], $selected, true) ? 'selected="selected"' : '' ?>>
+                        <?= $escaper->escapeHtml($option['label']) ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+        <?php elseif ($input === 'multiline'): ?>
+            <?php $lines = array_values((array)$value); ?>
+            <?php for ($line = 0; $line < $field['lines']; $line++): ?>
+                <div class="<?= $line === 0 ? '' : 'field additional' ?>">
+                    <input type="text"
+                           name="<?= $escaper->escapeHtmlAttr($name) ?>[]"
+                           id="<?= $escaper->escapeHtmlAttr($id . ($line === 0 ? '' : '_' . $line)) ?>"
+                           value="<?= $escaper->escapeHtmlAttr((string)($lines[$line] ?? '')) ?>"
+                           title="<?= $escaper->escapeHtmlAttr($field['label']) ?>"
+                           class="input-text <?= $line === 0 ? $escaper->escapeHtmlAttr($class) : '' ?>"/>
+                </div>
+            <?php endfor; ?>
+        <?php else: ?>
+            <?php $type = match (true) {
+                $input === 'date' => 'date',
+                $field['code'] === 'email' => 'email',
+                default => 'text',
+            }; ?>
+            <input type="<?= /* @noEscape */ $type ?>"
+                   name="<?= $escaper->escapeHtmlAttr($name) ?>"
+                   id="<?= $escaper->escapeHtmlAttr($id) ?>"
+                   value="<?= $escaper->escapeHtmlAttr((string)$value) ?>"
+                   title="<?= $escaper->escapeHtmlAttr($field['label']) ?>"
+                   class="input-text <?= $escaper->escapeHtmlAttr($class) ?>"/>
+        <?php endif; ?>
+    </div>
+</div>

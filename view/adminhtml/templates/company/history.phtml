@@ -1,0 +1,42 @@
+<?php
+/**
+ * Status history table of the company form.
+ *
+ * @var \MageOS\Company\Block\Adminhtml\Company\Edit\History $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+
+$history = $block->getHistory();
+?>
+<?php if (!$history): ?>
+    <div class="message message-notice"><?= $escaper->escapeHtml(__('No status changes yet.')) ?></div>
+<?php else: ?>
+    <div class="admin__table-wrapper">
+        <table class="data-table admin__table-primary company-status-history">
+            <thead>
+            <tr>
+                <th><?= $escaper->escapeHtml(__('Date')) ?></th>
+                <th><?= $escaper->escapeHtml(__('From')) ?></th>
+                <th><?= $escaper->escapeHtml(__('To')) ?></th>
+                <th><?= $escaper->escapeHtml(__('By')) ?></th>
+                <th><?= $escaper->escapeHtml(__('Comment')) ?></th>
+            </tr>
+            </thead>
+            <tbody>
+            <?php foreach ($history as $record): ?>
+                <tr>
+                    <td><?= $escaper->escapeHtml($block->formatDate(
+                        $record->getCreatedAt(),
+                        \IntlDateFormatter::MEDIUM,
+                        true
+                    )) ?></td>
+                    <td><?= $escaper->escapeHtml($block->getStatusLabel($record->getFromStatus())) ?></td>
+                    <td><?= $escaper->escapeHtml($block->getStatusLabel($record->getToStatus())) ?></td>
+                    <td><?= $escaper->escapeHtml($block->getActorLabel($record)) ?></td>
+                    <td><?= /* @noEscape */ nl2br($escaper->escapeHtml((string)$record->getComment())) ?></td>
+                </tr>
+            <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+<?php endif; ?>

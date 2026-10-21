@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Acl/etc/acl.xsd">
+    <acl>
+        <resources>
+            <resource id="Magento_Backend::admin">
+                <resource id="Magento_Customer::customer">
+                    <resource id="MageOS_Company::company" title="Companies" translate="title" sortOrder="15">
+                        <resource id="MageOS_Company::company_view" title="View Companies" translate="title"
+                                  sortOrder="10"/>
+                        <resource id="MageOS_Company::company_edit" title="Add/Edit Companies" translate="title"
+                                  sortOrder="20"/>
+                        <resource id="MageOS_Company::company_delete" title="Delete Companies" translate="title"
+                                  sortOrder="30"/>
+                        <resource id="MageOS_Company::company_approve" title="Change Company Status"
+                                  translate="title" sortOrder="40"/>
+                        <resource id="MageOS_Company::company_erp" title="Manage ERP Code" translate="title"
+                                  sortOrder="50"/>
+                        <resource id="MageOS_Company::messages" title="Company Messages" translate="title"
+                                  sortOrder="60"/>
+                    </resource>
+                </resource>
+                <resource id="Magento_Backend::stores">
+                    <resource id="Magento_Backend::stores_attributes">
+                        <resource id="MageOS_Company::attributes" title="Company Attributes" translate="title"
+                                  sortOrder="60"/>
+                    </resource>
+                    <resource id="Magento_Backend::stores_settings">
+                        <resource id="Magento_Config::config">
+                            <resource id="MageOS_Company::config" title="Company Section" translate="title"
+                                      sortOrder="60"/>
+                        </resource>
+                    </resource>
+                </resource>
+            </resource>
+        </resources>
+    </acl>
+</config>

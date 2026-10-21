@@ -1,0 +1,23 @@
+<?php
+/**
+ * "Register your company" box on the customer login page.
+ *
+ * @var \MageOS\Company\Block\RegisterLink $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+?>
+<div class="block block-company-register">
+    <div class="block-title">
+        <strong role="heading" aria-level="2"><?= $escaper->escapeHtml(__('Business Customers')) ?></strong>
+    </div>
+    <div class="block-content">
+        <p><?= $escaper->escapeHtml(__('Apply for a company account to buy on behalf of your business.')) ?></p>
+        <div class="actions-toolbar">
+            <div class="primary">
+                <a href="<?= $escaper->escapeUrl($block->getHref()) ?>" class="action create primary">
+                    <span><?= $escaper->escapeHtml(__('Register Your Company')) ?></span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

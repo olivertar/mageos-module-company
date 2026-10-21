@@ -1,0 +1,25 @@
+<!--@subject {{trans "You are invited to join %company_name at %store_name" company_name=$company_name store_name=$store.frontend_name}} @-->
+<!--@vars {
+"var store.frontend_name":"Store Name",
+"var company_name":"Company Name",
+"var inviter_name":"Inviter Name",
+"var accept_url":"Accept URL",
+"var lifetime":"Days the link is valid"
+} @-->
+
+{{template config_path="design/email/header_template"}}
+
+{{depend inviter_name}}
+<p>{{trans "%inviter_name invited you to join %company_name at %store_name." inviter_name=$inviter_name company_name=$company_name store_name=$store.frontend_name}}</p>
+{{/depend}}
+<p>{{trans "Company users can buy and manage the company account on behalf of %company_name." company_name=$company_name}}</p>
+<p>
+    {{trans
+        '<a href="%accept_url">Accept the invitation</a>. You can sign in with your existing account or create a new one.'
+
+        accept_url=$accept_url
+    |raw}}
+</p>
+<p>{{trans "The link is valid for %lifetime days. If you were not expecting this invitation, you can ignore this email." lifetime=$lifetime}}</p>
+
+{{template config_path="design/email/footer_template"}}

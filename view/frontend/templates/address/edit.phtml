@@ -1,0 +1,66 @@
+<?php
+/**
+ * Company address form.
+ *
+ * @var \Magento\Framework\View\Element\Template $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+
+/** @var \MageOS\Company\ViewModel\CompanyAccount $viewModel */
+$viewModel = $block->getData('view_model');
+/** @var \Magento\Framework\View\Element\Template $fieldRenderer */
+$fieldRenderer = $block->getChildBlock('field');
+$address = $viewModel->getEditAddress();
+$values = $viewModel->getAddressValues();
+$current = $address ? $viewModel->getDefaultLabels($address) : [];
+?>
+<form class="form company-address-edit" method="post" id="company-address-form"
+      action="<?= $escaper->escapeUrl($viewModel->getUrl('company/address/formPost')) ?>"
+      data-mage-init='{"validation":{}}'>
+    <?= $block->getBlockHtml('formkey') ?>
+    <?php if ($address): ?>
+        <input type="hidden" name="id" value="<?= (int)$address->getId() ?>"/>
+    <?php endif; ?>
+    <fieldset class="fieldset">
+        <legend class="legend"><span><?= $escaper->escapeHtml(__('Address')) ?></span></legend>
+        <?php foreach ($viewModel->getAddressFields($values) as $field): ?>
+            <?= /* @noEscape */ $fieldRenderer->setData('field', $field)->toHtml() ?>
+            <?php if ($field['code'] === 'city'): ?>
+                <?= /* @noEscape */ $block->getChildBlock('country_region')->addData([
+                    'fields' => $viewModel->getAttributeFields(),
+                    'scope' => 'address',
+                    'form_selector' => '#company-address-form',
+                    'country_id' => $values['country_id'] ?? null,
+                    'region_id' => $values['region_id'] ?? null,
+                    'region' => $values['region'] ?? null,
+                ])->toHtml() ?>
+            <?php endif; ?>
+        <?php endforeach; ?>
+        <?php foreach ($viewModel->getDefaultTypes() as $type => $label): ?>
+            <div class="field choice">
+                <?php if (isset($current[$type])): ?>
+                    <strong><?= $escaper->escapeHtml($label) ?></strong>
+                <?php else: ?>
+                    <input type="checkbox" class="checkbox" value="1"
+                           id="defaults_<?= $escaper->escapeHtmlAttr($type) ?>"
+                           name="defaults[<?= $escaper->escapeHtmlAttr($type) ?>]"/>
+                    <label class="label" for="defaults_<?= $escaper->escapeHtmlAttr($type) ?>">
+                        <span><?= $escaper->escapeHtml(__('Use as %1', $label)) ?></span>
+                    </label>
+                <?php endif; ?>
+            </div>
+        <?php endforeach; ?>
+    </fieldset>
+    <div class="actions-toolbar">
+        <div class="primary">
+            <button type="submit" class="action save primary">
+                <span><?= $escaper->escapeHtml(__('Save Address')) ?></span>
+            </button>
+        </div>
+        <div class="secondary">
+            <a class="action back" href="<?= $escaper->escapeUrl($viewModel->getUrl('company/address')) ?>">
+                <span><?= $escaper->escapeHtml(__('Back')) ?></span>
+            </a>
+        </div>
+    </div>
+</form>

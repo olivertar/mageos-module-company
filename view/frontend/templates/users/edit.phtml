@@ -1,0 +1,76 @@
+<?php
+/**
+ * Edit a company user.
+ *
+ * @var \Magento\Framework\View\Element\Template $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+
+/** @var \MageOS\Company\ViewModel\CompanyAccount $viewModel */
+$viewModel = $block->getData('view_model');
+$user = $viewModel->getEditUser();
+?>
+<?php if ($user): ?>
+    <form class="form company-user-edit" method="post" data-mage-init='{"validation":{}}'
+          action="<?= $escaper->escapeUrl($viewModel->getUrl('company/users/save')) ?>">
+        <?= $block->getBlockHtml('formkey') ?>
+        <input type="hidden" name="id" value="<?= (int)$user['customer_id'] ?>"/>
+        <fieldset class="fieldset">
+            <legend class="legend">
+                <span><?= $escaper->escapeHtml($user['name'] . ' (' . $user['email'] . ')') ?></span>
+            </legend>
+            <?php if ($user['is_super_user']): ?>
+                <p class="note">
+                    <?= $escaper->escapeHtml(__('The main contact of the company is always an active admin.')) ?>
+                </p>
+            <?php endif; ?>
+            <div class="field role required">
+                <label class="label" for="user_role"><span><?= $escaper->escapeHtml(__('Role')) ?></span></label>
+                <div class="control">
+                    <select name="role" id="user_role" class="select">
+                        <?php foreach ($viewModel->getRoleOptions() as $value => $label): ?>
+                            <option value="<?= $escaper->escapeHtmlAttr($value) ?>"
+                                <?= $value === $user['role'] ? 'selected="selected"' : '' ?>>
+                                <?= $escaper->escapeHtml($label) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+            </div>
+            <div class="field job-title">
+                <label class="label" for="user_job_title">
+                    <span><?= $escaper->escapeHtml(__('Job Title')) ?></span>
+                </label>
+                <div class="control">
+                    <input type="text" name="job_title" id="user_job_title" class="input-text"
+                           value="<?= $escaper->escapeHtmlAttr($user['job_title']) ?>"/>
+                </div>
+            </div>
+            <div class="field status">
+                <label class="label" for="user_status"><span><?= $escaper->escapeHtml(__('Status')) ?></span></label>
+                <div class="control">
+                    <select name="status" id="user_status" class="select">
+                        <option value="1" <?= $user['active'] ? 'selected="selected"' : '' ?>>
+                            <?= $escaper->escapeHtml(__('Active')) ?>
+                        </option>
+                        <option value="0" <?= $user['active'] ? '' : 'selected="selected"' ?>>
+                            <?= $escaper->escapeHtml(__('Inactive (cannot sign in)')) ?>
+                        </option>
+                    </select>
+                </div>
+            </div>
+        </fieldset>
+        <div class="actions-toolbar">
+            <div class="primary">
+                <button type="submit" class="action save primary">
+                    <span><?= $escaper->escapeHtml(__('Save')) ?></span>
+                </button>
+            </div>
+            <div class="secondary">
+                <a class="action back" href="<?= $escaper->escapeUrl($viewModel->getUrl('company/users')) ?>">
+                    <span><?= $escaper->escapeHtml(__('Back')) ?></span>
+                </a>
+            </div>
+        </div>
+    </form>
+<?php endif; ?>

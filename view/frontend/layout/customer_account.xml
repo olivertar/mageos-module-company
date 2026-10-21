@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceBlock name="customer_account_navigation">
+            <block class="MageOS\Company\Block\Account\CompanyLink" name="customer-account-navigation-company">
+                <arguments>
+                    <argument name="path" xsi:type="string">company/account</argument>
+                    <argument name="label" xsi:type="string" translate="true">My Company</argument>
+                    <argument name="resource" xsi:type="string">company.view</argument>
+                    <argument name="sortOrder" xsi:type="number">218</argument>
+                </arguments>
+            </block>
+            <block class="MageOS\Company\Block\Account\CompanyLink" name="customer-account-navigation-company-addresses">
+                <arguments>
+                    <argument name="path" xsi:type="string">company/address</argument>
+                    <argument name="label" xsi:type="string" translate="true">Company Addresses</argument>
+                    <argument name="resource" xsi:type="string">company.address.view</argument>
+                    <argument name="sortOrder" xsi:type="number">217</argument>
+                </arguments>
+            </block>
+            <block class="MageOS\Company\Block\Account\CompanyLink" name="customer-account-navigation-company-users">
+                <arguments>
+                    <argument name="path" xsi:type="string">company/users</argument>
+                    <argument name="label" xsi:type="string" translate="true">Company Users</argument>
+                    <argument name="resource" xsi:type="string">company.users.manage</argument>
+                    <argument name="sortOrder" xsi:type="number">216</argument>
+                </arguments>
+            </block>
+            <block class="MageOS\Company\Block\Account\MessagesLink" name="customer-account-navigation-company-messages">
+                <arguments>
+                    <argument name="path" xsi:type="string">company/message</argument>
+                    <argument name="resource" xsi:type="string">company.messages.view</argument>
+                    <argument name="sortOrder" xsi:type="number">215</argument>
+                </arguments>
+            </block>
+        </referenceBlock>
+    </body>
+</page>
